@@ -1,0 +1,15 @@
+*.json
+sub_module\__pycache__
+*.pyc
+__pycache__
+env/
+venv/
+ENV/
+*.egg-info/
+.DS_Store
+.idea/
+.vscode/
+*.txt
+*.log
+*.csv
+*.pyc

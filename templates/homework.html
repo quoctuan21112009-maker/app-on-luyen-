@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập ID Bài - ONLUYEN Batch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .log-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .log-container.show {
+            display: block;
+        }
+
+        .log-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .log-output {
+            background: #1e1e1e;
+            color: #0db;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-badge.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Nhập ID Bài</h1>
+        <p class="subtitle">Nhập mã bài hay ID từ thanh tìm kiếm (có thể nhập một phần)</p>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="homeworkForm">
+            <div class="form-group">
+                <label for="logid">ID Bài (Log ID) <span style="color: red;">*</span></label>
+                <input type="text" id="logid" name="logid" required 
+                       placeholder="Ví dụ: 69a57498... (có thể nhập một phần)">
+            </div>
+
+            <button type="submit" id="submitBtn">Chạy ✓</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <span>Chương trình đang chạy... vui lòng chờ</span>
+        </div>
+
+        <!-- Log Container -->
+        <div class="log-container" id="logContainer">
+            <div class="log-header">📋 Log Output:</div>
+            <div class="log-output" id="logOutput"></div>
+            <div id="statusBadge"></div>
+            <button class="back-btn" onclick="window.location.href='/'">← Quay Lại Trang Đăng Ký</button>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('homeworkForm');
+        const alertDiv = document.getElementById('alert');
+        const loading = document.getElementById('loading');
+        const logContainer = document.getElementById('logContainer');
+        const logOutput = document.getElementById('logOutput');
+        const statusBadge = document.getElementById('statusBadge');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const logid = document.getElementById('logid').value.trim();
+
+            if (!logid) {
+                alertDiv.className = 'alert error';
+                alertDiv.innerHTML = '✗ Vui lòng nhập ID bài';
+                return;
+            }
+
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            alertDiv.className = 'alert';
+            alertDiv.innerHTML = '';
+            logContainer.classList.remove('show');
+            logOutput.innerHTML = '';
+
+            try {
+                const response = await fetch('/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ logid })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    logContainer.classList.add('show');
+                    logOutput.innerHTML = data.log_file || data.message;
+                    statusBadge.className = 'status-badge success';
+                    statusBadge.innerHTML = `✓ ${data.status}`;
+                    
+                    alertDiv.className = 'alert success';
+                    alertDiv.innerHTML = `✓ Chương trình thực thi thành công! (${data.timestamp})`;
+                } else {
+                    logContainer.classList.add('show');
+                    logOutput.innerHTML = data.message || 'Lỗi không xác định';
+                    statusBadge.className = 'status-badge error';
+                    statusBadge.innerHTML = `✗ ${data.status || 'Lỗi'}`;
+                    
+                    alertDiv.className = 'alert error';
+                    alertDiv.innerHTML = `✗ ${data.message}`;
+                }
+            } catch (error) {
+                alertDiv.className = 'alert error';
+                alertDiv.innerHTML = `✗ Lỗi: ${error.message}`;
+                logContainer.classList.add('show');
+                logOutput.innerHTML = `Lỗi khi kết nối: ${error.message}`;
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
