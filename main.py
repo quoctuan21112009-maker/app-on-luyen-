@@ -1,16 +1,43 @@
 import sys
+import io
+import os
+
+# Force UTF-8 encoding for stdout/stderr
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from sub_module.Homework_module.Checkifanyonedidhw import *
 from sub_module.Homework_module.GETHWSpecificInfo import *
 from sub_module.Homework_module.POSTStartHW import *
 from sub_module.Homework_module.PUTAnswers import *
 from sub_module.Homework_module.convertREFtoANSDOC import *
 import json
+import base64
 from solve import *
 import time
 from config import *
 from studentdatabase import StudentDatabase
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
+
+
+def decode_jwt_username(jwt_token: str) -> str:
+    """
+    Decode JWT payload (no signature verification needed) and return userName field.
+    Returns empty string if decoding fails.
+    """
+    try:
+        parts = jwt_token.split('.')
+        if len(parts) != 3:
+            return ''
+        payload_b64 = parts[1]
+        # Add padding if needed
+        payload_b64 += '=' * (4 - len(payload_b64) % 4)
+        payload_bytes = base64.urlsafe_b64decode(payload_b64)
+        payload = json.loads(payload_bytes.decode('utf-8'))
+        return payload.get('userName', '').strip()
+    except Exception:
+        return ''
 
 class Logger(object):
     def __init__(self, filename='latest.log'):
@@ -79,6 +106,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run the ONLUYEN-BATCH process.")
     parser.add_argument('--debug', '-d', action='store_true', help="Enable debug mode")
     parser.add_argument('--logid', '-l', type=str, help="Test ID/LogID (optional, will prompt if not provided)")
+    parser.add_argument('--account', '-a', type=str, help="Specific account to solve for (optional)")
     args = parser.parse_args()
     
     # Override Global DEBUG_MODE with Argument
@@ -117,6 +145,42 @@ def main():
         end_time1 = time.perf_counter()
         elapsed = - start_time1 + end_time1
         print(f"Elapsed time for login {elapsed:.4f}")
+        
+        #3: Filter by specific account if provided
+        if args.account:
+            target_account = args.account.strip().lower()
+            print(f"Filtering for account: {target_account}")
+            print(f"[DEBUG] Total students_not_done: {len(students_not_done)}")
+
+            filtered = []
+            for idx, student in enumerate(students_not_done):
+                raw_field = student[1]
+                # student[1] may be a JWT token or a plain email depending on the module
+                # Try to decode as JWT first; fall back to treating it as plain email
+                decoded_email = decode_jwt_username(raw_field)
+                actual_email = decoded_email if decoded_email else raw_field.strip()
+                print(f"  [{idx}] Name={student[0]}, Email={actual_email}")
+                if actual_email.lower() == target_account:
+                    filtered.append(student)
+
+            print(f"[DEBUG] Filtered result count: {len(filtered)}")
+            students_not_done = filtered
+            if not students_not_done:
+                # Also check students_done list in case account already submitted
+                already_done = False
+                for student in students_done:
+                    raw_field = student[1]
+                    decoded_email = decode_jwt_username(raw_field)
+                    actual_email = decoded_email if decoded_email else raw_field.strip()
+                    if actual_email.lower() == target_account:
+                        already_done = True
+                        break
+                if already_done:
+                    print(f"Account {args.account} has already done the homework")
+                else:
+                    print(f"Account {args.account} does not exist in the student list")
+                sys.exit(1)
+        
         #3.1:chose 1 student done
         if not students_done:
             print("NO REF STUDENT CAN BE FOUND")
@@ -149,8 +213,8 @@ def main():
         print('-'*10 + 'ANSWER JSON MADE' + '-'*10)
 
         # Auto-continue if logid was provided via argument, otherwise prompt
-        if args.logid:
-            print("Auto-continuing (logid provided via argument)...")
+        if args.logid or args.account:
+            print("Auto-continuing (logid/account provided via argument)...")
         else:
             confirm = input("Continue?YN")
             print(confirm) # Echo input
