@@ -52,6 +52,40 @@ python app.py
 python app.py --port 8000
 ```
 
+## ⚡ Chạy Main.py Trực Tiếp (Không Web UI)
+
+Bạn có thể chạy chương trình main.py trực tiếp từ dòng lệnh mà không cần Flask web server:
+
+### Cách 1: Nhập ID bài khi chạy (Interactive)
+```bash
+python main.py
+```
+Chương trình sẽ yêu cầu bạn nhập ID bài.
+
+### Cách 2: Truyền ID bài trực tiếp (Automated)
+```bash
+python main.py --logid 69b7e0c2ea0e1ac3556961fc
+```
+hoặc sử dụng dạng ngắn:
+```bash
+python main.py -l 69b7e0c2ea0e1ac3556961fc
+```
+
+### Cách 3: Chạy với Debug Mode
+```bash
+python main.py --logid 69b7e0c2ea0e1ac3556961fc --debug
+```
+
+### Cách 4: Sử dụng File Batch
+```bash
+run.bat -l 69b7e0c2ea0e1ac3556961fc
+```
+
+**Lợi ích:**
+- Tự động bỏ qua prompt "Continue?YN" khi truyền --logid
+- Phù hợp để chạy tự động hoặc batch từ Task Scheduler
+- Giảm thời gian tương tác
+
 ## 🌐 Truy Cập
 
 Sau khi khởi động, mở trình duyệt và truy cập:
@@ -137,6 +171,9 @@ Chạy `main.py` với ID bài
 
 ## 🐛 Khắc Phục Sự Cố
 
+### Lỗi "I/O operation on closed file"
+✅ **Đã sửa** - Lỗi này xảy ra khi chương trình kết thúc. Phiên bản mới đã xử lý gracefully.
+
 ### Lỗi "Module not found"
 ```bash
 pip install -r requirements.txt
@@ -175,5 +212,5 @@ Nếu gặp vấn đề:
 
 ---
 
-**Version:** 1.0  
-**Last Updated:** 2026-03-18
+**Version:** 1.1 (Fixed I/O error, added --logid argument)  
+**Last Updated:** 2026-03-19

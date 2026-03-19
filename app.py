@@ -6,6 +6,7 @@ import sys
 import json
 from datetime import datetime
 from config import CSV_FILE_PATH
+from sub_module.utils import remove_accents
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -49,6 +50,9 @@ def register():
 
         if not all([ten, lop, taikhoan, matkhau]):
             return jsonify({'success': False, 'message': 'Vui lòng nhập đầy đủ thông tin'}), 400
+
+        # Remove Vietnamese accents from name
+        ten = remove_accents(ten)
 
         ensure_csv_exists()
         next_stt = get_next_stt()

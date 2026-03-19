@@ -17,18 +17,35 @@ class Logger(object):
         self.terminal = sys.stdout
         self.input_method = input # Store original input
         self.log = open(filename, "w", encoding='utf-8')
+        self.is_closed = False
 
     def write(self, message):
         self.terminal.write(message)
-        self.log.write(message)
-        self.log.flush()
+        if not self.is_closed:
+            try:
+                self.log.write(message)
+                self.log.flush()
+            except (ValueError, OSError):
+                pass  # Silently handle closed file errors
 
     def flush(self):
-        self.terminal.flush()
-        self.log.flush()
+        try:
+            self.terminal.flush()
+        except (ValueError, OSError):
+            pass
+        if not self.is_closed:
+            try:
+                self.log.flush()
+            except (ValueError, OSError):
+                pass  # Silently handle closed file errors
 
     def close(self):
-        self.log.close()
+        if not self.is_closed:
+            try:
+                self.log.close()
+            except (ValueError, OSError):
+                pass
+            self.is_closed = True
 
 def process_student_task(student, logid, answer_json, debug_mode):
     """
@@ -61,6 +78,7 @@ def main():
     # Argument Parser
     parser = argparse.ArgumentParser(description="Run the ONLUYEN-BATCH process.")
     parser.add_argument('--debug', '-d', action='store_true', help="Enable debug mode")
+    parser.add_argument('--logid', '-l', type=str, help="Test ID/LogID (optional, will prompt if not provided)")
     args = parser.parse_args()
     
     # Override Global DEBUG_MODE with Argument
@@ -77,12 +95,17 @@ def main():
         #START
         #1:GET LOGID + CSV
         try:
-            # Since we redirected stdout, the prompt from input() might go to the original stdout 
-            # or the new one depending on implementation. 
-            # Python's input() writes to sys.stdout.
-            logidpartial = input("Please input the logid of the test(the scrambled string in searchbar, partial OK):")
-            # Log the input itself
-            print(logidpartial) # Echo input to log
+            # Get logid from argument or prompt user
+            if args.logid:
+                logidpartial = args.logid
+                print(f"Using provided logid: {logidpartial}")
+            else:
+                # Since we redirected stdout, the prompt from input() might go to the original stdout 
+                # or the new one depending on implementation. 
+                # Python's input() writes to sys.stdout.
+                logidpartial = input("Please input the logid of the test(the scrambled string in searchbar, partial OK):")
+                # Log the input itself
+                print(logidpartial) # Echo input to log
         except EOFError:
             print("Input stream closed.")
             return
@@ -125,10 +148,14 @@ def main():
         print("-"*20)
         print('-'*10 + 'ANSWER JSON MADE' + '-'*10)
 
-        confirm = input("Continue?YN")
-        print(confirm) # Echo input
-        if confirm.upper() != "Y":
-            sys.exit(0)
+        # Auto-continue if logid was provided via argument, otherwise prompt
+        if args.logid:
+            print("Auto-continuing (logid provided via argument)...")
+        else:
+            confirm = input("Continue?YN")
+            print(confirm) # Echo input
+            if confirm.upper() != "Y":
+                sys.exit(0)
 
         print(f"Start copying with {DEFAULT_THREAD_COUNT} threads")
         start_time2 = time.perf_counter()
