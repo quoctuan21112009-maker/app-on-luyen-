@@ -105,6 +105,25 @@ def get_accounts():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
 
+def get_account_from_csv(taikhoan):
+    """Lấy thông tin tài khoản từ CSV"""
+    try:
+        ensure_csv_exists()
+        with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                if row.get('Tài khoản', '').strip().lower() == taikhoan.lower():
+                    return {
+                        'name': row.get('Họ và tên', '').strip(),
+                        'email': row.get('Tài khoản', '').strip(),
+                        'password': row.get('Mật khẩu', '').strip(),
+                        'class': row.get('Lớp', '').strip()
+                    }
+        return None
+    except Exception as e:
+        print(f"Error reading account from CSV: {e}")
+        return None
+
 @app.route('/run', methods=['POST'])
 def run_main():
     """Chạy main.py với logid và taikhoan để giải bài cho một tài khoản cụ thể"""
@@ -118,6 +137,13 @@ def run_main():
         
         if not taikhoan:
             return jsonify({'success': False, 'message': 'Vui lòng chọn tài khoản'}), 400
+
+        # Check xem tài khoản có tồn tại trong CSV không
+        account_info = get_account_from_csv(taikhoan)
+        if not account_info:
+            return jsonify({'success': False, 'message': f'Tài khoản {taikhoan} không tồn tại trong danh sách'}), 400
+        
+        print(f"[LOG] Chạy bài cho: {account_info['name']} ({taikhoan}) - Lớp {account_info['class']}")
 
         # Chạy main.py với --logid và --account
         process = subprocess.Popen(
