@@ -86,23 +86,42 @@ def homework():
     """Trang nhập ID bài"""
     return render_template('homework.html')
 
+@app.route('/get-accounts', methods=['GET'])
+def get_accounts():
+    """Lấy danh sách các tài khoản đã đăng ký"""
+    try:
+        ensure_csv_exists()
+        accounts = []
+        with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                if row.get('Tài khoản', '').strip():
+                    accounts.append({
+                        'name': row.get('Họ và tên', '').strip(),
+                        'email': row.get('Tài khoản', '').strip()
+                    })
+        
+        return jsonify({'success': True, 'accounts': accounts}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+
 @app.route('/run', methods=['POST'])
 def run_main():
-    """Chạy main.py với logid và hiển thị log"""
+    """Chạy main.py với logid và taikhoan để giải bài cho một tài khoản cụ thể"""
     try:
         data = request.json
         logid = data.get('logid', '').strip()
+        taikhoan = data.get('taikhoan', '').strip()
 
         if not logid:
             return jsonify({'success': False, 'message': 'Vui lòng nhập ID bài'}), 400
+        
+        if not taikhoan:
+            return jsonify({'success': False, 'message': 'Vui lòng chọn tài khoản'}), 400
 
-        # Chuẩn bị input cho main.py (logid)
-        input_data = logid + '\n' + 'Y\n'  # Nhập logid và confirm 'Y'
-
-        # Chạy main.py
+        # Chạy main.py với --logid và --account
         process = subprocess.Popen(
-            [sys.executable, 'main.py'],
-            stdin=subprocess.PIPE,
+            [sys.executable, 'main.py', '--logid', logid, '--account', taikhoan],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -111,7 +130,7 @@ def run_main():
         )
 
         # Lấy output
-        output, _ = process.communicate(input=input_data, timeout=600)  # Timeout 10 phút
+        output, _ = process.communicate(timeout=600)  # Timeout 10 phút
         returncode = process.returncode
 
         # Đọc log file nếu có
