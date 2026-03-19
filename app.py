@@ -13,10 +13,35 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Ensure CSV file exists with headers
 def ensure_csv_exists():
-    if not os.path.exists(CSV_FILE_PATH):
-        with open(CSV_FILE_PATH, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['STT', 'Mã học sinh', 'Họ và tên', 'Lớp', 'Tài khoản', 'Mật khẩu', 'Mã đăng nhập cho PH', 'isWrongPass', ''])
+    try:
+        if not os.path.exists(CSV_FILE_PATH):
+            print(f"[INFO] Creating new CSV at {CSV_FILE_PATH}")
+            with open(CSV_FILE_PATH, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(['STT', 'Mã học sinh', 'Họ và tên', 'Lớp', 'Tài khoản', 'Mật khẩu', 'Mã đăng nhập cho PH', 'isWrongPass', ''])
+        else:
+            # Fix headers if they have spaces after delimiter
+            try:
+                with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8') as f:
+                    first_line = f.readline().rstrip('\n')
+                    # Check if header has spaces
+                    if '; ' in first_line or ' ;' in first_line:
+                        # Read all content
+                        f.seek(0)
+                        lines = f.readlines()
+                        
+                        # Fix header - remove spaces around delimiter
+                        fixed_header = first_line.replace('; ', ';').replace(' ;', ';')
+                        
+                        # Write back
+                        with open(CSV_FILE_PATH, 'w', newline='', encoding='utf-8') as fw:
+                            fw.write(fixed_header + '\n')
+                            fw.writelines(lines[1:])
+                        print("[INFO] Fixed CSV header format")
+            except Exception as e:
+                print(f"[WARNING] Could not fix CSV header: {e}")
+    except Exception as e:
+        print(f"[ERROR] ensure_csv_exists failed: {e}")
 
 # Get the next STT number
 def get_next_stt():
@@ -92,32 +117,91 @@ def get_accounts():
     try:
         ensure_csv_exists()
         accounts = []
-        with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f, delimiter=';')
-            for row in reader:
-                if row.get('Tài khoản', '').strip():
-                    accounts.append({
-                        'name': row.get('Họ và tên', '').strip(),
-                        'email': row.get('Tài khoản', '').strip()
-                    })
         
+        print(f"[DEBUG] Reading CSV from: {CSV_FILE_PATH}")
+        print(f"[DEBUG] CSV file exists: {os.path.exists(CSV_FILE_PATH)}")
+        
+        with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8-sig') as f:  # utf-8-sig removes BOM
+            first_line = f.readline()
+            print(f"[DEBUG] CSV header: {repr(first_line)}")
+            
+            f.seek(0)  # Reset to beginning
+            reader = csv.DictReader(f, delimiter=';')
+            
+            if not reader.fieldnames:
+                print("[ERROR] CSV fieldnames is empty!")
+                return jsonify({'success': False, 'message': 'CSV không có header'}), 500
+            
+            print(f"[DEBUG] CSV fieldnames: {reader.fieldnames}")
+            
+            row_count = 0
+            for row in reader:
+                if not row:
+                    print(f"[DEBUG] Skipping empty row")
+                    continue
+                    
+                row_count += 1
+                try:
+                    # Safe key cleanup - handle None keys and list values
+                    row_cleaned = {}
+                    for k, v in row.items():
+                        clean_key = (k.strip() if k else '')
+                        # Handle case where value is list or None
+                        if isinstance(v, list):
+                            clean_val = (v[0].strip() if v and v[0] else '')
+                        else:
+                            clean_val = (v.strip() if v else '')
+                        row_cleaned[clean_key] = clean_val
+                    
+                    print(f"[DEBUG] Row {row_count}: {row_cleaned}")
+                    
+                    # Get email safely
+                    email = row_cleaned.get('Tài khoản', '')
+                    if email and email.strip():
+                        name = row_cleaned.get('Họ và tên', '')
+                        accounts.append({
+                            'name': name,
+                            'email': email
+                        })
+                        print(f"[DEBUG] Added account: {name} ({email})")
+                except Exception as row_error:
+                    print(f"[WARNING] Error processing row {row_count}: {row_error}")
+                    continue
+        
+        print(f"[DEBUG] Total accounts loaded: {len(accounts)}")
         return jsonify({'success': True, 'accounts': accounts}), 200
+        
     except Exception as e:
+        print(f"[ERROR] get_accounts exception: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
 
 def get_account_from_csv(taikhoan):
     """Lấy thông tin tài khoản từ CSV"""
     try:
         ensure_csv_exists()
-        with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8') as f:
+        with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8-sig') as f:  # Remove BOM
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
-                if row.get('Tài khoản', '').strip().lower() == taikhoan.lower():
+                # Strip spaces from keys and handle list/None values
+                row_cleaned = {}
+                for k, v in row.items():
+                    clean_key = (k.strip() if k else '')
+                    # Handle case where value is list or None
+                    if isinstance(v, list):
+                        clean_val = (v[0].strip() if v and v[0] else '')
+                    else:
+                        clean_val = (v.strip() if v else '')
+                    row_cleaned[clean_key] = clean_val
+                
+                email_in_csv = (row_cleaned.get('Tài khoản') or '').strip()
+                if email_in_csv.lower() == taikhoan.lower():
                     return {
-                        'name': row.get('Họ và tên', '').strip(),
-                        'email': row.get('Tài khoản', '').strip(),
-                        'password': row.get('Mật khẩu', '').strip(),
-                        'class': row.get('Lớp', '').strip()
+                        'name': (row_cleaned.get('Họ và tên') or '').strip(),
+                        'email': email_in_csv,
+                        'password': (row_cleaned.get('Mật khẩu') or '').strip(),
+                        'class': (row_cleaned.get('Lớp') or '').strip()
                     }
         return None
     except Exception as e:
@@ -146,24 +230,41 @@ def run_main():
         print(f"[LOG] Chạy bài cho: {account_info['name']} ({taikhoan}) - Lớp {account_info['class']}")
 
         # Chạy main.py với --logid và --account
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'  # Force UTF-8 encoding
+        
         process = subprocess.Popen(
             [sys.executable, 'main.py', '--logid', logid, '--account', taikhoan],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True,
-            encoding='utf-8',
+            text=False,  # Read as bytes, not text
+            env=env,
             cwd=os.path.dirname(os.path.abspath(__file__))
         )
 
-        # Lấy output
-        output, _ = process.communicate(timeout=600)  # Timeout 10 phút
+        # Lấy output - handle encoding issues
+        output_bytes, _ = process.communicate(timeout=600)  # Timeout 10 phút
         returncode = process.returncode
+        
+        # Try decode with multiple encodings
+        output = ''
+        for encoding in ['utf-8', 'cp1252', 'latin-1']:
+            try:
+                output = output_bytes.decode(encoding)
+                print(f"[DEBUG] Successfully decoded output with {encoding}")
+                break
+            except (UnicodeDecodeError, AttributeError):
+                continue
+        
+        # If all encodings fail, use replace mode
+        if not output:
+            output = output_bytes.decode('utf-8', errors='replace')
 
         # Đọc log file nếu có
         log_content = ''
         if os.path.exists('latest.log'):
             try:
-                with open('latest.log', 'r', encoding='utf-8') as f:
+                with open('latest.log', 'r', encoding='utf-8', errors='replace') as f:
                     log_content = f.read()
             except:
                 pass
@@ -183,6 +284,9 @@ def run_main():
         process.kill()
         return jsonify({'success': False, 'message': 'Timeout: Chương trình chạy quá lâu'}), 500
     except Exception as e:
+        print(f"[ERROR] run_main exception: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
 
 @app.route('/stream', methods=['POST'])
@@ -198,6 +302,9 @@ def stream_main():
         input_data = logid + '\n' + 'Y\n'
 
         def generate():
+            env = os.environ.copy()
+            env['PYTHONIOENCODING'] = 'utf-8'  # Force UTF-8 encoding
+            
             process = subprocess.Popen(
                 [sys.executable, 'main.py'],
                 stdin=subprocess.PIPE,
@@ -207,6 +314,7 @@ def stream_main():
                 encoding='utf-8',
                 bufsize=1,
                 universal_newlines=True,
+                env=env,
                 cwd=os.path.dirname(os.path.abspath(__file__))
             )
 
