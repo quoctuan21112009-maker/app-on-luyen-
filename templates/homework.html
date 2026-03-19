@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -185,8 +186,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .back-btn {
@@ -209,18 +215,27 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎯 Nhập ID Bài</h1>
-        <p class="subtitle">Nhập mã bài hay ID từ thanh tìm kiếm (có thể nhập một phần)</p>
+        <p class="subtitle">Chọn tài khoản và nhập mã bài để giải</p>
 
         <div id="alert" class="alert"></div>
 
         <form id="homeworkForm">
             <div class="form-group">
+                <label for="taikhoan">Chọn Tài Khoản <span style="color: red;">*</span></label>
+                <select id="taikhoan" name="taikhoan" required
+                    style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 16px;">
+                    <option value="">-- Chọn tài khoản --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="logid">ID Bài (Log ID) <span style="color: red;">*</span></label>
-                <input type="text" id="logid" name="logid" required 
-                       placeholder="Ví dụ: 69a57498... (có thể nhập một phần)">
+                <input type="text" id="logid" name="logid" required
+                    placeholder="Ví dụ: 69a57498... (có thể nhập một phần)">
             </div>
 
             <button type="submit" id="submitBtn">Chạy ✓</button>
@@ -248,15 +263,42 @@
         const logOutput = document.getElementById('logOutput');
         const statusBadge = document.getElementById('statusBadge');
         const submitBtn = document.getElementById('submitBtn');
+        const taikhoanSelect = document.getElementById('taikhoan');
+
+        // Load danh sách tài khoản khi trang load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/get-accounts');
+                const data = await response.json();
+
+                if (data.success) {
+                    data.accounts.forEach(account => {
+                        const option = document.createElement('option');
+                        option.value = account.email;
+                        option.textContent = `${account.name} (${account.email})`;
+                        taikhoanSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi tải danh sách tài khoản:', error);
+            }
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const logid = document.getElementById('logid').value.trim();
+            const taikhoan = taikhoanSelect.value.trim();
 
             if (!logid) {
                 alertDiv.className = 'alert error';
                 alertDiv.innerHTML = '✗ Vui lòng nhập ID bài';
+                return;
+            }
+
+            if (!taikhoan) {
+                alertDiv.className = 'alert error';
+                alertDiv.innerHTML = '✗ Vui lòng chọn tài khoản';
                 return;
             }
 
@@ -273,7 +315,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ logid })
+                    body: JSON.stringify({ logid, taikhoan })
                 });
 
                 const data = await response.json();
@@ -283,7 +325,7 @@
                     logOutput.innerHTML = data.log_file || data.message;
                     statusBadge.className = 'status-badge success';
                     statusBadge.innerHTML = `✓ ${data.status}`;
-                    
+
                     alertDiv.className = 'alert success';
                     alertDiv.innerHTML = `✓ Chương trình thực thi thành công! (${data.timestamp})`;
                 } else {
@@ -291,7 +333,7 @@
                     logOutput.innerHTML = data.message || 'Lỗi không xác định';
                     statusBadge.className = 'status-badge error';
                     statusBadge.innerHTML = `✗ ${data.status || 'Lỗi'}`;
-                    
+
                     alertDiv.className = 'alert error';
                     alertDiv.innerHTML = `✗ ${data.message}`;
                 }
@@ -307,4 +349,5 @@
         });
     </script>
 </body>
+
 </html>
