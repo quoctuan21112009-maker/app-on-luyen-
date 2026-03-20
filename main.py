@@ -155,10 +155,13 @@ def main():
             filtered = []
             for idx, student in enumerate(students_not_done):
                 raw_field = student[1]
+                if not raw_field:
+                    print(f"  [{idx}] Name={student[0]}, Email=MISSING (skipped)")
+                    continue
                 # student[1] may be a JWT token or a plain email depending on the module
                 # Try to decode as JWT first; fall back to treating it as plain email
                 decoded_email = decode_jwt_username(raw_field)
-                actual_email = decoded_email if decoded_email else raw_field.strip()
+                actual_email = decoded_email or raw_field.strip()
                 print(f"  [{idx}] Name={student[0]}, Email={actual_email}")
                 if actual_email.lower() == target_account:
                     filtered.append(student)
@@ -170,8 +173,10 @@ def main():
                 already_done = False
                 for student in students_done:
                     raw_field = student[1]
+                    if not raw_field:
+                        continue
                     decoded_email = decode_jwt_username(raw_field)
-                    actual_email = decoded_email if decoded_email else raw_field.strip()
+                    actual_email = decoded_email or raw_field.strip()
                     if actual_email.lower() == target_account:
                         already_done = True
                         break
