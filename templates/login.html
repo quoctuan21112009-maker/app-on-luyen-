@@ -4,78 +4,148 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DNS BATCH — Portal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#050508; --surface:rgba(255,255,255,0.03);
-  --border:rgba(0,230,255,0.15); --cyan:#00e5ff; --green:#00ff88;
-  --red:#ff4560; --yellow:#ffd600; --text:#c8d8e8; --muted:#4a6070;
+:root{
+  --bg:#050508;--surface:rgba(255,255,255,0.03);
+  --border:rgba(0,230,255,0.15);--cyan:#00e5ff;--green:#00ff88;
+  --red:#ff4560;--yellow:#ffd600;--orange:#ff9500;
+  --text:#c8d8e8;--muted:#4a6070;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:0;}
-.card{position:relative;z-index:1;width:100%;max-width:480px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 32px;backdrop-filter:blur(20px);box-shadow:0 0 60px rgba(0,229,255,0.05),inset 0 1px 0 rgba(255,255,255,0.05);animation:fadeIn .5s ease;}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);
+     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);}
+.card{position:relative;z-index:1;width:100%;max-width:480px;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:36px 32px;backdrop-filter:blur(20px);
+  box-shadow:0 0 60px rgba(0,229,255,0.05),inset 0 1px 0 rgba(255,255,255,0.05);
+  animation:fadeIn .5s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
 .logo{text-align:center;margin-bottom:28px;}
-.logo-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.4);}
+.logo-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:4px;
+  color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.4);}
 .logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:4px;}
-.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:28px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:4px;}
-.tab-btn{background:transparent;border:none;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.5px;padding:9px 6px;border-radius:7px;cursor:pointer;transition:all .25s;white-space:nowrap;}
+
+/* Tabs */
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:28px;
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:4px;}
+.tab-btn{background:transparent;border:none;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+  letter-spacing:.5px;padding:9px 6px;border-radius:7px;cursor:pointer;transition:all .25s;white-space:nowrap;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.active{background:rgba(0,229,255,0.1);color:var(--cyan);box-shadow:0 0 12px rgba(0,229,255,0.2);}
 .tab-content{display:none;}
 .tab-content.active{display:block;animation:fadeIn .3s ease;}
-.section-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+.section-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Form */
 .form-group{margin-bottom:18px;}
 label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
-input,select{width:100%;padding:12px 14px;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;}
+input,select{width:100%;padding:12px 14px;background:rgba(0,0,0,0.4);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;
+  outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;}
 input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.1);}
 input::placeholder{color:var(--muted);}
 select option{background:#0d1117;}
-.btn{width:100%;padding:13px;border:none;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
-.btn-cyan{background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(0,229,255,0.04));border:1px solid var(--cyan);color:var(--cyan);}
-.btn-cyan:hover:not(:disabled){background:rgba(0,229,255,0.2);box-shadow:0 0 20px rgba(0,229,255,0.25);transform:translateY(-1px);}
-.btn-green{background:linear-gradient(135deg,rgba(0,255,136,0.12),rgba(0,255,136,0.04));border:1px solid var(--green);color:var(--green);}
-.btn-green:hover:not(:disabled){background:rgba(0,255,136,0.2);box-shadow:0 0 20px rgba(0,255,136,0.25);transform:translateY(-1px);}
+
+/* Buttons */
+.btn{width:100%;padding:13px;border:none;border-radius:8px;
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
+  letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.btn-cyan{background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(0,229,255,0.04));
+  border:1px solid var(--cyan);color:var(--cyan);}
+.btn-cyan:hover:not(:disabled){background:rgba(0,229,255,0.2);
+  box-shadow:0 0 20px rgba(0,229,255,0.25);transform:translateY(-1px);}
+.btn-green{background:linear-gradient(135deg,rgba(0,255,136,0.12),rgba(0,255,136,0.04));
+  border:1px solid var(--green);color:var(--green);}
+.btn-green:hover:not(:disabled){background:rgba(0,255,136,0.2);
+  box-shadow:0 0 20px rgba(0,255,136,0.25);transform:translateY(-1px);}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
-.alert{padding:11px 14px;border-radius:8px;font-size:12px;margin-bottom:18px;display:none;border-left:3px solid;animation:fadeIn .3s;}
+
+/* Alert */
+.alert{padding:11px 14px;border-radius:8px;font-size:12px;margin-bottom:18px;
+  display:none;border-left:3px solid;animation:fadeIn .3s;}
 .alert.show{display:block;}
 .alert-success{background:rgba(0,255,136,0.08);border-color:var(--green);color:var(--green);}
 .alert-error{background:rgba(255,69,96,0.08);border-color:var(--red);color:var(--red);}
 .alert-info{background:rgba(0,229,255,0.08);border-color:var(--cyan);color:var(--cyan);}
-/* Key styles */
-.ip-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;margin-bottom:16px;}
+
+/* Key tab */
+.ip-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:20px;
+  padding:4px 12px;margin-bottom:16px;}
 .ip-badge .dot{color:var(--cyan);}
-.key-box{background:rgba(0,0,0,0.5);border:1px solid var(--cyan);border-radius:12px;padding:22px;text-align:center;margin:16px 0;position:relative;overflow:hidden;}
-.key-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,229,255,0.06) 0%,transparent 70%);}
+.key-box{background:rgba(0,0,0,0.5);border:1px solid var(--cyan);border-radius:12px;
+  padding:22px;text-align:center;margin:16px 0;position:relative;overflow:hidden;}
+.key-box::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(0,229,255,0.06) 0%,transparent 70%);}
 .key-label{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
-.key-value{font-size:20px;font-weight:700;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.5);position:relative;word-break:break-all;}
+.key-value{font-size:20px;font-weight:700;letter-spacing:4px;color:var(--cyan);
+  text-shadow:0 0 20px rgba(0,229,255,0.5);position:relative;word-break:break-all;}
 .key-meta{font-size:11px;color:var(--muted);margin-top:12px;position:relative;}
-.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;animation:pulse 2s infinite;}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;animation:blink 2s infinite;}
 .dot-valid{background:var(--green);box-shadow:0 0 8px var(--green);}
 .dot-invalid{background:var(--red);box-shadow:0 0 8px var(--red);animation:none;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 .countdown{font-size:13px;color:var(--yellow);margin-top:8px;font-weight:600;position:relative;}
-.copy-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 14px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;margin-top:10px;transition:all .2s;display:inline-block;position:relative;}
+.copy-btn{background:transparent;border:1px solid var(--border);color:var(--muted);
+  padding:5px 14px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;
+  cursor:pointer;margin-top:10px;transition:all .2s;display:inline-block;position:relative;}
 .copy-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-/* Admin */
+
+/* Spinner */
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border);
+  border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;
+  vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── ADMIN PANEL ── */
 .admin-panel{margin-top:20px;border:1px solid rgba(255,214,0,0.2);border-radius:10px;overflow:hidden;}
-.admin-header{background:rgba(255,214,0,0.05);padding:10px 16px;font-size:10px;letter-spacing:2px;color:var(--yellow);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.admin-header{background:rgba(255,214,0,0.05);padding:10px 16px;font-size:10px;
+  letter-spacing:2px;color:var(--yellow);display:flex;align-items:center;gap:8px;
+  cursor:pointer;user-select:none;}
 .admin-body{padding:20px 16px;display:none;border-top:1px solid rgba(255,214,0,0.1);animation:fadeIn .3s;}
 .admin-body.show{display:block;}
-.btn-admin{width:100%;padding:10px;background:rgba(255,214,0,0.1);border:1px solid var(--yellow);color:var(--yellow);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;border-radius:7px;transition:all .2s;}
+.btn-admin{width:100%;padding:10px;background:rgba(255,214,0,0.1);border:1px solid var(--yellow);
+  color:var(--yellow);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:1px;cursor:pointer;border-radius:7px;transition:all .2s;}
 .btn-admin:hover{background:rgba(255,214,0,0.2);}
+.btn-admin-red{width:100%;padding:8px;background:rgba(255,69,96,0.1);border:1px solid var(--red);
+  color:var(--red);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:1px;cursor:pointer;border-radius:7px;transition:all .2s;}
+.btn-admin-red:hover{background:rgba(255,69,96,0.2);}
+.btn-admin-green{width:100%;padding:8px;background:rgba(0,255,136,0.1);border:1px solid var(--green);
+  color:var(--green);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:1px;cursor:pointer;border-radius:7px;transition:all .2s;}
+.btn-admin-green:hover{background:rgba(0,255,136,0.2);}
 .divider{height:1px;background:var(--border);margin:16px 0;}
+.small-label{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.small-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.05);}
+
+/* Keys table */
+.keys-wrap{overflow:auto;max-height:200px;}
 .keys-table{width:100%;border-collapse:collapse;font-size:10px;}
-.keys-table th{color:var(--muted);font-weight:400;padding:6px 6px;text-align:left;border-bottom:1px solid var(--border);}
+.keys-table th{color:var(--muted);font-weight:400;padding:6px;text-align:left;border-bottom:1px solid var(--border);}
 .keys-table td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
 .badge-valid{color:var(--green);}
 .badge-expired{color:var(--red);}
-.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px;}
-@keyframes spin{to{transform:rotate(360deg)}}
+.badge-off{color:var(--muted);}
+
+/* Tab specific inputs */
+.row2{display:grid;grid-template-columns:1fr 80px;gap:8px;}
+.row3{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;}
+
 .bottom-link{text-align:center;margin-top:24px;font-size:11px;color:var(--muted);}
 .bottom-link a{color:var(--cyan);text-decoration:none;}
 .bottom-link a:hover{text-shadow:0 0 10px rgba(0,229,255,0.5);}
@@ -97,7 +167,7 @@ select option{background:#0d1117;}
     <button class="tab-btn" data-tab="key">🔑 Lấy Key</button>
   </div>
 
-  <!-- TAB 1 -->
+  <!-- ── TAB: CHỌN ACC ── -->
   <div id="tab-select" class="tab-content active">
     <div class="section-label">Chọn tài khoản</div>
     <div class="form-group">
@@ -107,7 +177,7 @@ select option{background:#0d1117;}
     <button class="btn btn-cyan" onclick="handleSelect()">Tiếp tục →</button>
   </div>
 
-  <!-- TAB 2 -->
+  <!-- ── TAB: ĐĂNG KÝ ── -->
   <div id="tab-register" class="tab-content">
     <div class="section-label">Đăng ký mới</div>
     <div class="form-group"><label>Họ và Tên</label><input type="text" id="ten" placeholder="Nguyễn Văn A"></div>
@@ -117,231 +187,470 @@ select option{background:#0d1117;}
     <button class="btn btn-green" id="regBtn" onclick="handleRegister()">Đăng ký &amp; Tiếp tục →</button>
   </div>
 
-  <!-- TAB 3 -->
+  <!-- ── TAB: LẤY KEY ── -->
   <div id="tab-key" class="tab-content">
     <div class="section-label">Key theo địa chỉ IP</div>
-    <div id="keyLoading" style="text-align:center;padding:20px 0;color:var(--muted);font-size:12px;"><span class="spinner"></span>Đang xác định IP...</div>
+
+    <div id="keyLoading" style="text-align:center;padding:20px 0;color:var(--muted);font-size:12px;">
+      <span class="spinner"></span>Đang xác định IP...
+    </div>
+
     <div id="keyContent" style="display:none">
-      <div id="ipBadge" class="ip-badge"><span class="dot">◉</span><span id="ipText">—</span></div>
+      <div class="ip-badge"><span class="dot">◉</span><span id="ipText">—</span></div>
       <div class="key-box">
         <div class="key-label">Key của bạn</div>
         <div class="key-value" id="keyValue">——————</div>
-        <div class="key-meta"><span class="status-dot dot-valid" id="keyDot"></span><span id="keyStatus">Đang kiểm tra...</span></div>
+        <div class="key-meta">
+          <span class="status-dot dot-valid" id="keyDot"></span>
+          <span id="keyStatus">Đang kiểm tra...</span>
+        </div>
         <div class="countdown" id="keyCountdown"></div>
-        <br><button class="copy-btn" onclick="copyKey()">⧉ Sao chép key</button>
+        <br>
+        <button class="copy-btn" onclick="copyKey()">⧉ Sao chép key</button>
       </div>
-      <div id="keyExpired" class="alert alert-error" style="display:none;font-size:11px;">⚠ Key đã hết hạn. Liên hệ admin để gia hạn.</div>
+      <div id="keyNote" style="font-size:11px;color:var(--muted);margin-top:4px;display:none">
+        📝 Ghi chú: <span id="keyNoteText"></span>
+      </div>
+      <div id="keyExpiredBox" class="alert alert-error" style="display:none;font-size:11px;">
+        ⚠ Key đã hết hạn hoặc bị vô hiệu hoá. Liên hệ admin để gia hạn.
+      </div>
     </div>
 
     <!-- ADMIN PANEL -->
     <div class="admin-panel">
       <div class="admin-header" onclick="toggleAdmin()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
         ADMIN PANEL
         <span id="adminArrow" style="margin-left:auto">▾</span>
       </div>
+
       <div class="admin-body" id="adminBody">
 
+        <!-- LOGIN -->
         <div id="adminLogin">
-          <div class="form-group" style="margin-bottom:12px"><label>Tài khoản</label><input type="text" id="adminUser" placeholder="username"></div>
-          <div class="form-group" style="margin-bottom:14px"><label>Mật khẩu</label><input type="password" id="adminPass" placeholder="••••••••"></div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>Tài khoản</label>
+            <input type="text" id="adminUser" placeholder="username" autocomplete="off">
+          </div>
+          <div class="form-group" style="margin-bottom:14px">
+            <label>Mật khẩu</label>
+            <input type="password" id="adminPass" placeholder="••••••••"
+              onkeydown="if(event.key==='Enter')adminLogin()">
+          </div>
           <button class="btn-admin" onclick="adminLogin()">ĐĂNG NHẬP ADMIN</button>
           <div id="adminErr" style="color:var(--red);font-size:11px;margin-top:8px;display:none"></div>
         </div>
 
+        <!-- DASHBOARD -->
         <div id="adminDash" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <span style="font-size:11px;color:var(--yellow)">● Admin: quoctuan</span>
-            <button onclick="adminLogout()" style="background:transparent;border:1px solid var(--red);color:var(--red);font-size:9px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Đăng xuất</button>
+            <button onclick="adminLogout()"
+              style="background:transparent;border:1px solid var(--red);color:var(--red);
+                font-size:9px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace">
+              Đăng xuất
+            </button>
           </div>
           <div class="divider"></div>
 
+          <!-- TẠO KEY MỚI CHO IP -->
           <div style="margin-bottom:14px">
-            <div class="section-label" style="font-size:9px">Gia hạn key</div>
-            <div style="display:grid;grid-template-columns:1fr 72px;gap:8px;margin-bottom:8px">
-              <input type="text" id="extKey" placeholder="Key (20 ký tự)" style="padding:9px 12px;font-size:11px">
-              <input type="number" id="extDays" value="7" min="1" style="padding:9px 8px;font-size:11px;text-align:center">
+            <div class="small-label">Tạo key cho IP</div>
+            <div class="row2" style="margin-bottom:8px">
+              <input type="text" id="createIP" placeholder="IP (vd: 192.168.1.1)" style="font-size:11px;padding:9px 12px">
+              <input type="number" id="createDays" value="30" min="1" style="font-size:11px;padding:9px 8px;text-align:center">
             </div>
-            <input type="text" id="extNote" placeholder="Ghi chú (tùy chọn)" style="margin-bottom:8px;font-size:11px;padding:9px 12px">
-            <button class="btn-admin" onclick="extendKey()">GIA HẠN KEY</button>
+            <input type="text" id="createNote" placeholder="Ghi chú (tùy chọn)"
+              style="margin-bottom:8px;font-size:11px;padding:9px 12px">
+            <button class="btn-admin-green" onclick="adminCreateKey()">➕ TẠO KEY</button>
+            <div id="createResult" style="font-size:11px;margin-top:8px;display:none"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- ĐẶT NGÀY GIỜ CHÍNH XÁC -->
+          <div style="margin-bottom:14px">
+            <div class="small-label">Đặt hạn chính xác</div>
+            <input type="text" id="setKey" placeholder="Key (20 ký tự)"
+              style="margin-bottom:8px;font-size:11px;padding:9px 12px">
+            <input type="datetime-local" id="setExpiry"
+              style="margin-bottom:8px;font-size:11px;padding:9px 12px">
+            <input type="text" id="setNote" placeholder="Ghi chú (tùy chọn)"
+              style="margin-bottom:8px;font-size:11px;padding:9px 12px">
+            <button class="btn-admin" onclick="adminSetExpiry()">📅 ĐẶT NGÀY GIỜ</button>
+            <div id="setResult" style="font-size:11px;margin-top:8px;display:none"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- GIA HẠN THÊM N NGÀY -->
+          <div style="margin-bottom:14px">
+            <div class="small-label">Gia hạn thêm N ngày</div>
+            <div class="row2" style="margin-bottom:8px">
+              <input type="text" id="extKey" placeholder="Key (20 ký tự)" style="font-size:11px;padding:9px 12px">
+              <input type="number" id="extDays" value="7" min="1" style="font-size:11px;padding:9px 8px;text-align:center">
+            </div>
+            <input type="text" id="extNote" placeholder="Ghi chú (tùy chọn)"
+              style="margin-bottom:8px;font-size:11px;padding:9px 12px">
+            <button class="btn-admin" onclick="extendKey()">⏫ GIA HẠN KEY</button>
             <div id="extResult" style="font-size:11px;margin-top:8px;display:none"></div>
           </div>
 
           <div class="divider"></div>
+
+          <!-- DANH SÁCH KEY -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div class="section-label" style="font-size:9px;margin-bottom:0">Danh sách key</div>
-            <button onclick="loadAdminKeys()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:5px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">↻ Tải lại</button>
+            <div class="small-label" style="margin-bottom:0">Danh sách key</div>
+            <button onclick="loadAdminKeys()"
+              style="background:transparent;border:1px solid var(--border);color:var(--muted);
+                padding:4px 10px;border-radius:5px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">
+              ↻ Tải lại
+            </button>
           </div>
-          <div id="keysWrap" style="overflow:auto;max-height:180px">
+          <div class="keys-wrap" id="keysWrap">
             <div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa tải</div>
           </div>
         </div>
 
-      </div>
-    </div>
-  </div>
+      </div><!-- /adminBody -->
+    </div><!-- /admin-panel -->
+  </div><!-- /tab-key -->
 
   <div class="bottom-link"><a href="/homework">→ Đến trang làm bài</a></div>
 </div>
 
 <script>
-let adminToken = localStorage.getItem('adminToken')||'';
+let adminToken = localStorage.getItem('adminToken') || '';
 let currentKey = '';
-let cInterval = null;
+let cInterval  = null;
 
-// Tabs
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const tab=btn.dataset.tab;
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+// ── TABS ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('tab-'+tab).classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
     clearAlert();
-    if(tab==='key') loadKey();
+    if (tab === 'key') loadKey();
   });
 });
 
-function showAlert(msg,type='info'){const el=document.getElementById('alert');el.className='alert alert-'+type+' show';el.textContent=msg;}
-function clearAlert(){const el=document.getElementById('alert');el.className='alert';el.textContent='';}
-
-// Load accounts
-async function loadAccounts(){
-  try{
-    const d=await(await fetch('/get-accounts')).json();
-    const sel=document.getElementById('selectAccount');
-    if(d.success&&d.accounts.length){
-      sel.innerHTML='<option value="">-- Chọn tài khoản --</option>';
-      d.accounts.forEach(a=>{const o=document.createElement('option');o.value=a.email;o.textContent=`${a.name} (${a.email})`;sel.appendChild(o);});
-    }else{sel.innerHTML='<option value="">Không có tài khoản</option>';}
-  }catch{document.getElementById('selectAccount').innerHTML='<option value="">Lỗi tải danh sách</option>';}
+function showAlert(msg, type='info') {
+  const el = document.getElementById('alert');
+  el.className = 'alert alert-' + type + ' show';
+  el.textContent = msg;
+}
+function clearAlert() {
+  const el = document.getElementById('alert');
+  el.className = 'alert'; el.textContent = '';
 }
 
-function handleSelect(){
-  const v=document.getElementById('selectAccount').value;
-  if(!v){showAlert('Vui lòng chọn tài khoản','error');return;}
-  sessionStorage.setItem('selectedAccount',v);
-  showAlert('Đang chuyển hướng...','info');
-  setTimeout(()=>{window.location.href='/homework';},700);
-}
-
-async function handleRegister(){
-  const ten=document.getElementById('ten').value.trim();
-  const lop=document.getElementById('lop').value.trim();
-  const taikhoan=document.getElementById('taikhoan').value.trim();
-  const matkhau=document.getElementById('matkhau').value.trim();
-  if(!ten||!lop||!taikhoan||!matkhau){showAlert('Vui lòng điền đầy đủ thông tin','error');return;}
-  const btn=document.getElementById('regBtn');
-  btn.disabled=true;btn.textContent='Đang xử lý...';
-  try{
-    const d=await(await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ten,lop,taikhoan,matkhau})})).json();
-    if(d.success){showAlert(d.message,'success');loadAccounts();['ten','lop','taikhoan','matkhau'].forEach(id=>document.getElementById(id).value='');setTimeout(()=>{window.location.href='/homework';},1500);}
-    else{showAlert(d.message,'error');}
-  }catch(e){showAlert('Lỗi kết nối: '+e.message,'error');}
-  finally{btn.disabled=false;btn.textContent='Đăng ký & Tiếp tục →';}
-}
-
-// Key system
-async function loadKey(){
-  document.getElementById('keyLoading').style.display='block';
-  document.getElementById('keyContent').style.display='none';
-  try{
-    const d=await(await fetch('/get-key')).json();
-    currentKey=d.key;
-    document.getElementById('ipText').textContent=d.ip;
-    document.getElementById('keyValue').textContent=fmtKey(d.key);
-    document.getElementById('keyLoading').style.display='none';
-    document.getElementById('keyContent').style.display='block';
-    if(d.is_valid){
-      document.getElementById('keyDot').className='status-dot dot-valid';
-      document.getElementById('keyStatus').textContent='KEY HỢP LỆ';
-      document.getElementById('keyExpired').style.display='none';
-      startCountdown(d.seconds_remaining);
-    }else{
-      document.getElementById('keyDot').className='status-dot dot-invalid';
-      document.getElementById('keyStatus').textContent='KEY HẾT HẠN';
-      document.getElementById('keyCountdown').textContent='';
-      document.getElementById('keyExpired').style.display='block';
+// ── ACC ───────────────────────────────────────────────────────────────────────
+async function loadAccounts() {
+  try {
+    const d = await (await fetch('/get-accounts')).json();
+    const sel = document.getElementById('selectAccount');
+    if (d.success && d.accounts.length) {
+      sel.innerHTML = '<option value="">-- Chọn tài khoản --</option>';
+      d.accounts.forEach(a => {
+        const o = document.createElement('option');
+        o.value = a.email;
+        o.textContent = `${a.name} (${a.email})`;
+        sel.appendChild(o);
+      });
+    } else {
+      sel.innerHTML = '<option value="">Không có tài khoản</option>';
     }
-  }catch(e){document.getElementById('keyLoading').innerHTML='<span style="color:var(--red)">Lỗi tải key: '+e.message+'</span>';}
+  } catch {
+    document.getElementById('selectAccount').innerHTML = '<option value="">Lỗi tải danh sách</option>';
+  }
 }
 
-function fmtKey(k){return k.match(/.{1,5}/g).join('-');}
+function handleSelect() {
+  const v = document.getElementById('selectAccount').value;
+  if (!v) { showAlert('Vui lòng chọn tài khoản', 'error'); return; }
+  sessionStorage.setItem('selectedAccount', v);
+  showAlert('Đang chuyển hướng...', 'info');
+  setTimeout(() => { window.location.href = '/homework'; }, 700);
+}
 
-function startCountdown(s){
-  if(cInterval)clearInterval(cInterval);
-  const el=document.getElementById('keyCountdown');
-  const tick=()=>{
-    if(s<=0){clearInterval(cInterval);el.textContent='Đã hết hạn';document.getElementById('keyDot').className='status-dot dot-invalid';document.getElementById('keyExpired').style.display='block';return;}
-    const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
-    el.textContent=`Còn lại: ${pad(h)}:${pad(m)}:${pad(sec)}`;s--;
+async function handleRegister() {
+  const ten = document.getElementById('ten').value.trim();
+  const lop = document.getElementById('lop').value.trim();
+  const tk  = document.getElementById('taikhoan').value.trim();
+  const mk  = document.getElementById('matkhau').value.trim();
+  if (!ten || !lop || !tk || !mk) { showAlert('Vui lòng điền đầy đủ thông tin', 'error'); return; }
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.textContent = 'Đang xử lý...';
+  try {
+    const d = await (await fetch('/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ten, lop, taikhoan: tk, matkhau: mk })
+    })).json();
+    if (d.success) {
+      showAlert(d.message, 'success');
+      loadAccounts();
+      ['ten','lop','taikhoan','matkhau'].forEach(id => document.getElementById(id).value = '');
+      setTimeout(() => { window.location.href = '/homework'; }, 1500);
+    } else { showAlert(d.message, 'error'); }
+  } catch (e) { showAlert('Lỗi kết nối: ' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Đăng ký & Tiếp tục →'; }
+}
+
+// ── KEY ───────────────────────────────────────────────────────────────────────
+async function loadKey() {
+  document.getElementById('keyLoading').style.display = 'block';
+  document.getElementById('keyContent').style.display = 'none';
+  try {
+    const d = await (await fetch('/get-key')).json();
+    currentKey = d.key;
+    document.getElementById('ipText').textContent = d.ip;
+    document.getElementById('keyValue').textContent = fmtKey(d.key);
+    document.getElementById('keyLoading').style.display = 'none';
+    document.getElementById('keyContent').style.display = 'block';
+
+    if (d.note) {
+      document.getElementById('keyNote').style.display = 'block';
+      document.getElementById('keyNoteText').textContent = d.note;
+    }
+    if (d.is_valid) {
+      document.getElementById('keyDot').className = 'status-dot dot-valid';
+      document.getElementById('keyStatus').textContent = 'KEY HỢP LỆ';
+      document.getElementById('keyExpiredBox').style.display = 'none';
+      startCountdown(d.seconds_remaining);
+    } else {
+      document.getElementById('keyDot').className = 'status-dot dot-invalid';
+      document.getElementById('keyStatus').textContent = 'KEY HẾT HẠN / BỊ KHÓA';
+      document.getElementById('keyCountdown').textContent = '';
+      document.getElementById('keyExpiredBox').style.display = 'block';
+    }
+  } catch (e) {
+    document.getElementById('keyLoading').innerHTML =
+      '<span style="color:var(--red)">Lỗi tải key: ' + e.message + '</span>';
+  }
+}
+
+function fmtKey(k) { return k.match(/.{1,5}/g).join('-'); }
+
+function startCountdown(s) {
+  if (cInterval) clearInterval(cInterval);
+  const el = document.getElementById('keyCountdown');
+  const tick = () => {
+    if (s <= 0) {
+      clearInterval(cInterval);
+      el.textContent = 'Đã hết hạn';
+      document.getElementById('keyDot').className = 'status-dot dot-invalid';
+      document.getElementById('keyExpiredBox').style.display = 'block';
+      return;
+    }
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    el.textContent = `Còn lại: ${pad(h)}:${pad(m)}:${pad(sec)}`;
+    s--;
   };
-  tick();cInterval=setInterval(tick,1000);
+  tick(); cInterval = setInterval(tick, 1000);
 }
-function pad(n){return String(n).padStart(2,'0');}
+function pad(n) { return String(n).padStart(2, '0'); }
 
-function copyKey(){
-  navigator.clipboard.writeText(currentKey).then(()=>{
-    const btn=document.querySelector('.copy-btn');btn.textContent='✓ Đã sao chép!';
-    setTimeout(()=>{btn.textContent='⧉ Sao chép key';},2000);
+function copyKey() {
+  navigator.clipboard.writeText(currentKey).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Đã sao chép!';
+    setTimeout(() => { btn.textContent = '⧉ Sao chép key'; }, 2000);
   });
 }
 
-// Admin
-function toggleAdmin(){
-  const body=document.getElementById('adminBody');
-  const arrow=document.getElementById('adminArrow');
-  const open=body.classList.toggle('show');
-  arrow.textContent=open?'▴':'▾';
-  if(open&&adminToken){document.getElementById('adminLogin').style.display='none';document.getElementById('adminDash').style.display='block';loadAdminKeys();}
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+function toggleAdmin() {
+  const body  = document.getElementById('adminBody');
+  const arrow = document.getElementById('adminArrow');
+  const open  = body.classList.toggle('show');
+  arrow.textContent = open ? '▴' : '▾';
+  if (open && adminToken) {
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminDash').style.display  = 'block';
+    loadAdminKeys();
+  }
 }
 
-async function adminLogin(){
-  const user=document.getElementById('adminUser').value.trim();
-  const pass=document.getElementById('adminPass').value.trim();
-  const err=document.getElementById('adminErr');
-  err.style.display='none';
-  try{
-    const d=await(await fetch('/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass})})).json();
-    if(d.success){adminToken=d.token;localStorage.setItem('adminToken',adminToken);document.getElementById('adminLogin').style.display='none';document.getElementById('adminDash').style.display='block';loadAdminKeys();}
-    else{err.textContent=d.message;err.style.display='block';}
-  }catch{err.textContent='Lỗi kết nối';err.style.display='block';}
+async function adminLogin() {
+  const user = document.getElementById('adminUser').value.trim();
+  const pass = document.getElementById('adminPass').value.trim();
+  const err  = document.getElementById('adminErr');
+  err.style.display = 'none';
+  try {
+    const d = await (await fetch('/admin/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    })).json();
+    if (d.success) {
+      adminToken = d.token;
+      localStorage.setItem('adminToken', adminToken);
+      document.getElementById('adminLogin').style.display = 'none';
+      document.getElementById('adminDash').style.display  = 'block';
+      loadAdminKeys();
+    } else { err.textContent = d.message; err.style.display = 'block'; }
+  } catch { err.textContent = 'Lỗi kết nối'; err.style.display = 'block'; }
 }
 
-function adminLogout(){adminToken='';localStorage.removeItem('adminToken');document.getElementById('adminLogin').style.display='block';document.getElementById('adminDash').style.display='none';document.getElementById('adminUser').value='';document.getElementById('adminPass').value='';}
-
-async function extendKey(){
-  const key=document.getElementById('extKey').value.trim().replace(/-/g,'').toUpperCase();
-  const days=parseInt(document.getElementById('extDays').value)||7;
-  const note=document.getElementById('extNote').value.trim();
-  const res=document.getElementById('extResult');res.style.display='none';
-  try{
-    const d=await(await fetch('/admin/extend-key',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Auth':adminToken},body:JSON.stringify({key,days,note})})).json();
-    res.style.display='block';res.style.color=d.success?'var(--green)':'var(--red)';
-    res.textContent=d.success?`✓ ${d.message} — Hết hạn: ${new Date(d.new_expiry).toLocaleString('vi')}`:`✗ ${d.message}`;
-    if(d.success){loadAdminKeys();document.getElementById('extKey').value='';}
-  }catch{res.textContent='Lỗi kết nối';res.style.display='block';res.style.color='var(--red)';}
+function adminLogout() {
+  adminToken = ''; localStorage.removeItem('adminToken');
+  document.getElementById('adminLogin').style.display = 'block';
+  document.getElementById('adminDash').style.display  = 'none';
+  document.getElementById('adminUser').value = '';
+  document.getElementById('adminPass').value = '';
 }
 
-async function loadAdminKeys(){
-  const wrap=document.getElementById('keysWrap');
-  wrap.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px"><span class="spinner"></span>Đang tải...</div>';
-  try{
-    const d=await(await fetch('/admin/keys',{headers:{'X-Admin-Auth':adminToken}})).json();
-    if(!d.success){wrap.innerHTML=`<div style="color:var(--red);font-size:11px;text-align:center;padding:10px">${d.message}</div>`;return;}
-    if(!d.keys.length){wrap.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa có key nào</div>';return;}
-    let html='<table class="keys-table"><thead><tr><th>Key</th><th>IP</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr></thead><tbody>';
-    d.keys.forEach(k=>{
-      const exp=new Date(k.expiry).toLocaleDateString('vi');
-      const badge=k.is_valid?'<span class="badge-valid">● VALID</span>':'<span class="badge-expired">● HẾT HẠN</span>';
-      html+=`<tr><td style="color:var(--cyan);font-size:9px;letter-spacing:1px">${k.key.match(/.{1,5}/g).join('-')}</td><td style="color:var(--muted)">${k.ip}</td><td>${exp}</td><td>${badge}</td><td><button onclick="document.getElementById('extKey').value='${k.key}'" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 7px;border-radius:4px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">▲</button></td></tr>`;
+function authHeader() { return { 'Content-Type': 'application/json', 'X-Admin-Auth': adminToken }; }
+
+function showResult(id, d) {
+  const el = document.getElementById(id);
+  el.style.display   = 'block';
+  el.style.color     = d.success ? 'var(--green)' : 'var(--red)';
+  el.textContent     = d.success ? `✓ ${d.message}` : `✗ ${d.message}`;
+  if (d.success && d.new_expiry) {
+    el.textContent += ` — Hết hạn: ${new Date(d.new_expiry).toLocaleString('vi')}`;
+  }
+  if (d.success && d.key) {
+    el.textContent += ` | Key: ${fmtKey(d.key)}`;
+  }
+}
+
+// Tạo key mới cho IP
+async function adminCreateKey() {
+  const ip   = document.getElementById('createIP').value.trim();
+  const days = parseInt(document.getElementById('createDays').value) || 30;
+  const note = document.getElementById('createNote').value.trim();
+  const res  = document.getElementById('createResult');
+  res.style.display = 'none';
+  try {
+    const d = await (await fetch('/admin/create-key', {
+      method: 'POST', headers: authHeader(),
+      body: JSON.stringify({ ip, days, note })
+    })).json();
+    showResult('createResult', d);
+    if (d.success) { loadAdminKeys(); document.getElementById('createIP').value = ''; }
+  } catch { document.getElementById('createResult').textContent = 'Lỗi kết nối'; res.style.display = 'block'; res.style.color = 'var(--red)'; }
+}
+
+// Đặt ngày giờ chính xác
+async function adminSetExpiry() {
+  const key    = document.getElementById('setKey').value.trim().replace(/-/g,'').toUpperCase();
+  const expiry = document.getElementById('setExpiry').value; // "2025-12-31T23:59"
+  const note   = document.getElementById('setNote').value.trim();
+  const res    = document.getElementById('setResult');
+  res.style.display = 'none';
+  if (!expiry) { res.style.display='block'; res.style.color='var(--red)'; res.textContent='Vui lòng chọn ngày giờ'; return; }
+  try {
+    const d = await (await fetch('/admin/set-expiry', {
+      method: 'POST', headers: authHeader(),
+      body: JSON.stringify({ key, expiry, note })
+    })).json();
+    showResult('setResult', d);
+    if (d.success) loadAdminKeys();
+  } catch { res.style.display='block'; res.style.color='var(--red)'; res.textContent='Lỗi kết nối'; }
+}
+
+// Gia hạn thêm N ngày
+async function extendKey() {
+  const key  = document.getElementById('extKey').value.trim().replace(/-/g,'').toUpperCase();
+  const days = parseInt(document.getElementById('extDays').value) || 7;
+  const note = document.getElementById('extNote').value.trim();
+  const res  = document.getElementById('extResult');
+  res.style.display = 'none';
+  try {
+    const d = await (await fetch('/admin/extend-key', {
+      method: 'POST', headers: authHeader(),
+      body: JSON.stringify({ key, days, note })
+    })).json();
+    showResult('extResult', d);
+    if (d.success) { loadAdminKeys(); document.getElementById('extKey').value = ''; }
+  } catch { res.style.display='block'; res.style.color='var(--red)'; res.textContent='Lỗi kết nối'; }
+}
+
+// Load bảng keys
+async function loadAdminKeys() {
+  const wrap = document.getElementById('keysWrap');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const d = await (await fetch('/admin/keys', { headers: { 'X-Admin-Auth': adminToken } })).json();
+    if (!d.success) { wrap.innerHTML = `<div style="color:var(--red);font-size:11px;text-align:center;padding:10px">${d.message}</div>`; return; }
+    if (!d.keys.length) { wrap.innerHTML = '<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa có key nào</div>'; return; }
+
+    let html = '<table class="keys-table"><thead><tr><th>Key</th><th>IP</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr></thead><tbody>';
+    d.keys.forEach(k => {
+      const exp   = new Date(k.expiry).toLocaleString('vi');
+      const badge = !k.active
+        ? `<span class="badge-off">● TẮT</span>`
+        : k.is_valid
+          ? `<span class="badge-valid">● VALID</span>`
+          : `<span class="badge-expired">● HẾT HẠN</span>`;
+      const fk = fmtKey(k.key);
+      html += `<tr>
+        <td style="color:var(--cyan);font-size:9px;letter-spacing:1px">${fk}</td>
+        <td style="color:var(--muted)">${k.ip}</td>
+        <td style="font-size:10px">${exp}</td>
+        <td>${badge}</td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button onclick="quickFill('${k.key}')" title="Điền vào ô gia hạn"
+              style="background:transparent;border:1px solid var(--border);color:var(--muted);
+                padding:3px 7px;border-radius:4px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">▲</button>
+            <button onclick="toggleKey('${k.key}')" title="${k.active?'Tắt':'Bật'} key"
+              style="background:transparent;border:1px solid ${k.active?'var(--yellow)':'var(--green)'};
+                color:${k.active?'var(--yellow)':'var(--green)'};
+                padding:3px 7px;border-radius:4px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">
+              ${k.active ? '⏸' : '▶'}
+            </button>
+            <button onclick="deleteKey('${k.key}')" title="Xóa key"
+              style="background:transparent;border:1px solid var(--red);color:var(--red);
+                padding:3px 7px;border-radius:4px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">✕</button>
+          </div>
+        </td>
+      </tr>`;
     });
-    html+='</tbody></table>';
-    wrap.innerHTML=html;
-  }catch(e){wrap.innerHTML=`<div style="color:var(--red);font-size:11px;padding:10px">Lỗi: ${e.message}</div>`;}
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  } catch (e) { wrap.innerHTML = `<div style="color:var(--red);font-size:11px;padding:10px">Lỗi: ${e.message}</div>`; }
 }
 
+function quickFill(key) {
+  document.getElementById('extKey').value = key;
+  document.getElementById('setKey').value = key;
+  document.getElementById('extKey').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+async function toggleKey(key) {
+  try {
+    const d = await (await fetch('/admin/toggle-key', {
+      method: 'POST', headers: authHeader(), body: JSON.stringify({ key })
+    })).json();
+    if (d.success) loadAdminKeys();
+    else alert(d.message);
+  } catch (e) { alert('Lỗi: ' + e.message); }
+}
+
+async function deleteKey(key) {
+  if (!confirm(`Xóa key ${fmtKey(key)}?\nHành động này không thể hoàn tác.`)) return;
+  try {
+    const d = await (await fetch('/admin/delete-key', {
+      method: 'POST', headers: authHeader(), body: JSON.stringify({ key })
+    })).json();
+    if (d.success) loadAdminKeys();
+    else alert(d.message);
+  } catch (e) { alert('Lỗi: ' + e.message); }
+}
+
+// Init
 loadAccounts();
+if (adminToken) {
+  // Nếu đã đăng nhập từ session trước
+  document.addEventListener('DOMContentLoaded', () => {});
+}
 </script>
 </body>
 </html>
