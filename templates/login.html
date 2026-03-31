@@ -1,392 +1,347 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập - ONLUYEN Batch</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .alert {
-            margin-bottom: 20px;
-            padding: 12px;
-            border-radius: 5px;
-            display: none;
-        }
-
-        .alert.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-
-        .alert.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            background-color: white;
-            cursor: pointer;
-        }
-
-        select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .tab-btn {
-            padding: 10px 20px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            color: #999;
-            font-weight: 600;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNS BATCH — Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#050508; --surface:rgba(255,255,255,0.03);
+  --border:rgba(0,230,255,0.15); --cyan:#00e5ff; --green:#00ff88;
+  --red:#ff4560; --yellow:#ffd600; --text:#c8d8e8; --muted:#4a6070;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:0;}
+.card{position:relative;z-index:1;width:100%;max-width:480px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 32px;backdrop-filter:blur(20px);box-shadow:0 0 60px rgba(0,229,255,0.05),inset 0 1px 0 rgba(255,255,255,0.05);animation:fadeIn .5s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.logo{text-align:center;margin-bottom:28px;}
+.logo-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.4);}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:4px;}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:28px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:4px;}
+.tab-btn{background:transparent;border:none;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.5px;padding:9px 6px;border-radius:7px;cursor:pointer;transition:all .25s;white-space:nowrap;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{background:rgba(0,229,255,0.1);color:var(--cyan);box-shadow:0 0 12px rgba(0,229,255,0.2);}
+.tab-content{display:none;}
+.tab-content.active{display:block;animation:fadeIn .3s ease;}
+.section-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-group{margin-bottom:18px;}
+label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+input,select{width:100%;padding:12px 14px;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;}
+input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.1);}
+input::placeholder{color:var(--muted);}
+select option{background:#0d1117;}
+.btn{width:100%;padding:13px;border:none;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.btn-cyan{background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(0,229,255,0.04));border:1px solid var(--cyan);color:var(--cyan);}
+.btn-cyan:hover:not(:disabled){background:rgba(0,229,255,0.2);box-shadow:0 0 20px rgba(0,229,255,0.25);transform:translateY(-1px);}
+.btn-green{background:linear-gradient(135deg,rgba(0,255,136,0.12),rgba(0,255,136,0.04));border:1px solid var(--green);color:var(--green);}
+.btn-green:hover:not(:disabled){background:rgba(0,255,136,0.2);box-shadow:0 0 20px rgba(0,255,136,0.25);transform:translateY(-1px);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.alert{padding:11px 14px;border-radius:8px;font-size:12px;margin-bottom:18px;display:none;border-left:3px solid;animation:fadeIn .3s;}
+.alert.show{display:block;}
+.alert-success{background:rgba(0,255,136,0.08);border-color:var(--green);color:var(--green);}
+.alert-error{background:rgba(255,69,96,0.08);border-color:var(--red);color:var(--red);}
+.alert-info{background:rgba(0,229,255,0.08);border-color:var(--cyan);color:var(--cyan);}
+/* Key styles */
+.ip-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;margin-bottom:16px;}
+.ip-badge .dot{color:var(--cyan);}
+.key-box{background:rgba(0,0,0,0.5);border:1px solid var(--cyan);border-radius:12px;padding:22px;text-align:center;margin:16px 0;position:relative;overflow:hidden;}
+.key-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,229,255,0.06) 0%,transparent 70%);}
+.key-label{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+.key-value{font-size:20px;font-weight:700;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.5);position:relative;word-break:break-all;}
+.key-meta{font-size:11px;color:var(--muted);margin-top:12px;position:relative;}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;animation:pulse 2s infinite;}
+.dot-valid{background:var(--green);box-shadow:0 0 8px var(--green);}
+.dot-invalid{background:var(--red);box-shadow:0 0 8px var(--red);animation:none;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.countdown{font-size:13px;color:var(--yellow);margin-top:8px;font-weight:600;position:relative;}
+.copy-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 14px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;margin-top:10px;transition:all .2s;display:inline-block;position:relative;}
+.copy-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+/* Admin */
+.admin-panel{margin-top:20px;border:1px solid rgba(255,214,0,0.2);border-radius:10px;overflow:hidden;}
+.admin-header{background:rgba(255,214,0,0.05);padding:10px 16px;font-size:10px;letter-spacing:2px;color:var(--yellow);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.admin-body{padding:20px 16px;display:none;border-top:1px solid rgba(255,214,0,0.1);animation:fadeIn .3s;}
+.admin-body.show{display:block;}
+.btn-admin{width:100%;padding:10px;background:rgba(255,214,0,0.1);border:1px solid var(--yellow);color:var(--yellow);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;border-radius:7px;transition:all .2s;}
+.btn-admin:hover{background:rgba(255,214,0,0.2);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.keys-table{width:100%;border-collapse:collapse;font-size:10px;}
+.keys-table th{color:var(--muted);font-weight:400;padding:6px 6px;text-align:left;border-bottom:1px solid var(--border);}
+.keys-table td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+.badge-valid{color:var(--green);}
+.badge-expired{color:var(--red);}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bottom-link{text-align:center;margin-top:24px;font-size:11px;color:var(--muted);}
+.bottom-link a{color:var(--cyan);text-decoration:none;}
+.bottom-link a:hover{text-shadow:0 0 10px rgba(0,229,255,0.5);}
+@media(max-width:400px){.card{padding:24px 16px;}.key-value{font-size:15px;letter-spacing:2px;}}
+</style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>🎓 ONLUYEN Batch</h1>
+<div class="card">
+  <div class="logo">
+    <div class="logo-title">DNS BATCH</div>
+    <div class="logo-sub">ONLUYEN AUTOMATION PORTAL v2.0</div>
+  </div>
 
-        <div id="alert" class="alert"></div>
+  <div id="alert" class="alert"></div>
 
-        <!-- Tabs for switching between modes -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="select">📋 Chọn Acc</button>
-            <button class="tab-btn" data-tab="register">➕ Đăng Ký Mới</button>
-        </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="select">📋 Chọn Acc</button>
+    <button class="tab-btn" data-tab="register">➕ Đăng Ký</button>
+    <button class="tab-btn" data-tab="key">🔑 Lấy Key</button>
+  </div>
 
-        <!-- Tab 1: Select existing account -->
-        <div id="select" class="tab-content active">
-            <form id="selectForm">
-                <div class="form-group">
-                    <label for="selectAccount">Chọn Tài Khoản <span style="color: red;">*</span></label>
-                    <select id="selectAccount" required>
-                        <option value="">-- Đang tải danh sách... --</option>
-                    </select>
-                </div>
+  <!-- TAB 1 -->
+  <div id="tab-select" class="tab-content active">
+    <div class="section-label">Chọn tài khoản</div>
+    <div class="form-group">
+      <label>Tài khoản</label>
+      <select id="selectAccount"><option value="">-- Đang tải... --</option></select>
+    </div>
+    <button class="btn btn-cyan" onclick="handleSelect()">Tiếp tục →</button>
+  </div>
 
-                <button type="submit">Tiếp Tục →</button>
-            </form>
-        </div>
+  <!-- TAB 2 -->
+  <div id="tab-register" class="tab-content">
+    <div class="section-label">Đăng ký mới</div>
+    <div class="form-group"><label>Họ và Tên</label><input type="text" id="ten" placeholder="Nguyễn Văn A"></div>
+    <div class="form-group"><label>Lớp</label><input type="text" id="lop" placeholder="11A1"></div>
+    <div class="form-group"><label>Email (Tài khoản)</label><input type="email" id="taikhoan" placeholder="email@example.com"></div>
+    <div class="form-group"><label>Mật khẩu</label><input type="password" id="matkhau" placeholder="••••••••"></div>
+    <button class="btn btn-green" id="regBtn" onclick="handleRegister()">Đăng ký &amp; Tiếp tục →</button>
+  </div>
 
-        <!-- Tab 2: Register new account -->
-        <div id="register" class="tab-content">
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="ten">Họ và Tên <span style="color: red;">*</span></label>
-                    <input type="text" id="ten" name="ten" required placeholder="Nhập họ tên">
-                </div>
-
-                <div class="form-group">
-                    <label for="lop">Lớp <span style="color: red;">*</span></label>
-                    <input type="text" id="lop" name="lop" required placeholder="Ví dụ: 11a1">
-                </div>
-
-                <div class="form-group">
-                    <label for="taikhoan">Tài Khoản (Email) <span style="color: red;">*</span></label>
-                    <input type="email" id="taikhoan" name="taikhoan" required placeholder="email@example.com">
-                </div>
-
-                <div class="form-group">
-                    <label for="matkhau">Mật Khẩu <span style="color: red;">*</span></label>
-                    <input type="password" id="matkhau" name="matkhau" required placeholder="Nhập mật khẩu">
-                </div>
-
-                <button type="submit">Đăng Ký & Tiếp Tục →</button>
-            </form>
-        </div>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <span>Đang xử lý...</span>
-        </div>
+  <!-- TAB 3 -->
+  <div id="tab-key" class="tab-content">
+    <div class="section-label">Key theo địa chỉ IP</div>
+    <div id="keyLoading" style="text-align:center;padding:20px 0;color:var(--muted);font-size:12px;"><span class="spinner"></span>Đang xác định IP...</div>
+    <div id="keyContent" style="display:none">
+      <div id="ipBadge" class="ip-badge"><span class="dot">◉</span><span id="ipText">—</span></div>
+      <div class="key-box">
+        <div class="key-label">Key của bạn</div>
+        <div class="key-value" id="keyValue">——————</div>
+        <div class="key-meta"><span class="status-dot dot-valid" id="keyDot"></span><span id="keyStatus">Đang kiểm tra...</span></div>
+        <div class="countdown" id="keyCountdown"></div>
+        <br><button class="copy-btn" onclick="copyKey()">⧉ Sao chép key</button>
+      </div>
+      <div id="keyExpired" class="alert alert-error" style="display:none;font-size:11px;">⚠ Key đã hết hạn. Liên hệ admin để gia hạn.</div>
     </div>
 
-    <script>
-        // Tab switching logic
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
+    <!-- ADMIN PANEL -->
+    <div class="admin-panel">
+      <div class="admin-header" onclick="toggleAdmin()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        ADMIN PANEL
+        <span id="adminArrow" style="margin-left:auto">▾</span>
+      </div>
+      <div class="admin-body" id="adminBody">
 
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tabName = btn.getAttribute('data-tab');
+        <div id="adminLogin">
+          <div class="form-group" style="margin-bottom:12px"><label>Tài khoản</label><input type="text" id="adminUser" placeholder="username"></div>
+          <div class="form-group" style="margin-bottom:14px"><label>Mật khẩu</label><input type="password" id="adminPass" placeholder="••••••••"></div>
+          <button class="btn-admin" onclick="adminLogin()">ĐĂNG NHẬP ADMIN</button>
+          <div id="adminErr" style="color:var(--red);font-size:11px;margin-top:8px;display:none"></div>
+        </div>
 
-                // Remove active from all
-                tabBtns.forEach(b => b.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
+        <div id="adminDash" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <span style="font-size:11px;color:var(--yellow)">● Admin: quoctuan</span>
+            <button onclick="adminLogout()" style="background:transparent;border:1px solid var(--red);color:var(--red);font-size:9px;padding:4px 10px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Đăng xuất</button>
+          </div>
+          <div class="divider"></div>
 
-                // Add active to clicked
-                btn.classList.add('active');
-                document.getElementById(tabName).classList.add('active');
+          <div style="margin-bottom:14px">
+            <div class="section-label" style="font-size:9px">Gia hạn key</div>
+            <div style="display:grid;grid-template-columns:1fr 72px;gap:8px;margin-bottom:8px">
+              <input type="text" id="extKey" placeholder="Key (20 ký tự)" style="padding:9px 12px;font-size:11px">
+              <input type="number" id="extDays" value="7" min="1" style="padding:9px 8px;font-size:11px;text-align:center">
+            </div>
+            <input type="text" id="extNote" placeholder="Ghi chú (tùy chọn)" style="margin-bottom:8px;font-size:11px;padding:9px 12px">
+            <button class="btn-admin" onclick="extendKey()">GIA HẠN KEY</button>
+            <div id="extResult" style="font-size:11px;margin-top:8px;display:none"></div>
+          </div>
 
-                // Clear alerts when switching tabs
-                alertDiv.classList.remove('success', 'error');
-                alertDiv.innerHTML = '';
-            });
-        });
+          <div class="divider"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div class="section-label" style="font-size:9px;margin-bottom:0">Danh sách key</div>
+            <button onclick="loadAdminKeys()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:5px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">↻ Tải lại</button>
+          </div>
+          <div id="keysWrap" style="overflow:auto;max-height:180px">
+            <div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa tải</div>
+          </div>
+        </div>
 
-        // Load accounts from CSV
-        async function loadAccounts() {
-            try {
-                console.log('[DEBUG] Fetching accounts from /get-accounts...');
-                const response = await fetch('/get-accounts');
-                console.log('[DEBUG] Response status:', response.status);
+      </div>
+    </div>
+  </div>
 
-                const data = await response.json();
-                console.log('[DEBUG] Response data:', data);
+  <div class="bottom-link"><a href="/homework">→ Đến trang làm bài</a></div>
+</div>
 
-                if (data.success && data.accounts && data.accounts.length > 0) {
-                    console.log(`[DEBUG] Loaded ${data.accounts.length} accounts`);
-                    const selectElement = document.getElementById('selectAccount');
-                    selectElement.innerHTML = '<option value="">-- Chọn một tài khoản --</option>';
+<script>
+let adminToken = localStorage.getItem('adminToken')||'';
+let currentKey = '';
+let cInterval = null;
 
-                    data.accounts.forEach(acc => {
-                        const option = document.createElement('option');
-                        option.value = acc.email;
-                        option.textContent = `${acc.name} (${acc.email})`;
-                        selectElement.appendChild(option);
-                        console.log(`[DEBUG] Added option: ${acc.name} (${acc.email})`);
-                    });
-                } else {
-                    console.warn('[DEBUG] No accounts found or success=false');
-                    const selectElement = document.getElementById('selectAccount');
-                    selectElement.innerHTML = '<option value="">Không có tài khoản nào</option>';
-                }
-            } catch (error) {
-                console.error('[ERROR] Failed to load accounts:', error);
-                const selectElement = document.getElementById('selectAccount');
-                selectElement.innerHTML = '<option value="">Lỗi tải danh sách: ' + error.message + '</option>';
-            }
-        }
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const tab=btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+tab).classList.add('active');
+    clearAlert();
+    if(tab==='key') loadKey();
+  });
+});
 
-        // Load accounts when page loads
-        loadAccounts();
+function showAlert(msg,type='info'){const el=document.getElementById('alert');el.className='alert alert-'+type+' show';el.textContent=msg;}
+function clearAlert(){const el=document.getElementById('alert');el.className='alert';el.textContent='';}
 
-        const alertDiv = document.getElementById('alert');
-        const loading = document.getElementById('loading');
+// Load accounts
+async function loadAccounts(){
+  try{
+    const d=await(await fetch('/get-accounts')).json();
+    const sel=document.getElementById('selectAccount');
+    if(d.success&&d.accounts.length){
+      sel.innerHTML='<option value="">-- Chọn tài khoản --</option>';
+      d.accounts.forEach(a=>{const o=document.createElement('option');o.value=a.email;o.textContent=`${a.name} (${a.email})`;sel.appendChild(o);});
+    }else{sel.innerHTML='<option value="">Không có tài khoản</option>';}
+  }catch{document.getElementById('selectAccount').innerHTML='<option value="">Lỗi tải danh sách</option>';}
+}
 
-        // Select account form
-        const selectForm = document.getElementById('selectForm');
-        selectForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+function handleSelect(){
+  const v=document.getElementById('selectAccount').value;
+  if(!v){showAlert('Vui lòng chọn tài khoản','error');return;}
+  sessionStorage.setItem('selectedAccount',v);
+  showAlert('Đang chuyển hướng...','info');
+  setTimeout(()=>{window.location.href='/homework';},700);
+}
 
-            const selectedEmail = document.getElementById('selectAccount').value;
+async function handleRegister(){
+  const ten=document.getElementById('ten').value.trim();
+  const lop=document.getElementById('lop').value.trim();
+  const taikhoan=document.getElementById('taikhoan').value.trim();
+  const matkhau=document.getElementById('matkhau').value.trim();
+  if(!ten||!lop||!taikhoan||!matkhau){showAlert('Vui lòng điền đầy đủ thông tin','error');return;}
+  const btn=document.getElementById('regBtn');
+  btn.disabled=true;btn.textContent='Đang xử lý...';
+  try{
+    const d=await(await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ten,lop,taikhoan,matkhau})})).json();
+    if(d.success){showAlert(d.message,'success');loadAccounts();['ten','lop','taikhoan','matkhau'].forEach(id=>document.getElementById(id).value='');setTimeout(()=>{window.location.href='/homework';},1500);}
+    else{showAlert(d.message,'error');}
+  }catch(e){showAlert('Lỗi kết nối: '+e.message,'error');}
+  finally{btn.disabled=false;btn.textContent='Đăng ký & Tiếp tục →';}
+}
 
-            if (!selectedEmail) {
-                alertDiv.classList.add('error');
-                alertDiv.innerHTML = '✗ Vui lòng chọn một tài khoản';
-                return;
-            }
+// Key system
+async function loadKey(){
+  document.getElementById('keyLoading').style.display='block';
+  document.getElementById('keyContent').style.display='none';
+  try{
+    const d=await(await fetch('/get-key')).json();
+    currentKey=d.key;
+    document.getElementById('ipText').textContent=d.ip;
+    document.getElementById('keyValue').textContent=fmtKey(d.key);
+    document.getElementById('keyLoading').style.display='none';
+    document.getElementById('keyContent').style.display='block';
+    if(d.is_valid){
+      document.getElementById('keyDot').className='status-dot dot-valid';
+      document.getElementById('keyStatus').textContent='KEY HỢP LỆ';
+      document.getElementById('keyExpired').style.display='none';
+      startCountdown(d.seconds_remaining);
+    }else{
+      document.getElementById('keyDot').className='status-dot dot-invalid';
+      document.getElementById('keyStatus').textContent='KEY HẾT HẠN';
+      document.getElementById('keyCountdown').textContent='';
+      document.getElementById('keyExpired').style.display='block';
+    }
+  }catch(e){document.getElementById('keyLoading').innerHTML='<span style="color:var(--red)">Lỗi tải key: '+e.message+'</span>';}
+}
 
-            loading.style.display = 'block';
-            alertDiv.classList.remove('success', 'error');
-            alertDiv.innerHTML = '';
+function fmtKey(k){return k.match(/.{1,5}/g).join('-');}
 
-            try {
-                // For now, just redirect to homework page
-                // In a real app, you'd want to persist this selection
-                sessionStorage.setItem('selectedAccount', selectedEmail);
-                setTimeout(() => {
-                    window.location.href = '/homework';
-                }, 1000);
-            } catch (error) {
-                alertDiv.classList.add('error');
-                alertDiv.innerHTML = `✗ Lỗi: ${error.message}`;
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
+function startCountdown(s){
+  if(cInterval)clearInterval(cInterval);
+  const el=document.getElementById('keyCountdown');
+  const tick=()=>{
+    if(s<=0){clearInterval(cInterval);el.textContent='Đã hết hạn';document.getElementById('keyDot').className='status-dot dot-invalid';document.getElementById('keyExpired').style.display='block';return;}
+    const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+    el.textContent=`Còn lại: ${pad(h)}:${pad(m)}:${pad(sec)}`;s--;
+  };
+  tick();cInterval=setInterval(tick,1000);
+}
+function pad(n){return String(n).padStart(2,'0');}
 
-        // Register new account form
-        const form = document.getElementById('loginForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+function copyKey(){
+  navigator.clipboard.writeText(currentKey).then(()=>{
+    const btn=document.querySelector('.copy-btn');btn.textContent='✓ Đã sao chép!';
+    setTimeout(()=>{btn.textContent='⧉ Sao chép key';},2000);
+  });
+}
 
-            const ten = document.getElementById('ten').value;
-            const lop = document.getElementById('lop').value;
-            const taikhoan = document.getElementById('taikhoan').value;
-            const matkhau = document.getElementById('matkhau').value;
+// Admin
+function toggleAdmin(){
+  const body=document.getElementById('adminBody');
+  const arrow=document.getElementById('adminArrow');
+  const open=body.classList.toggle('show');
+  arrow.textContent=open?'▴':'▾';
+  if(open&&adminToken){document.getElementById('adminLogin').style.display='none';document.getElementById('adminDash').style.display='block';loadAdminKeys();}
+}
 
-            loading.style.display = 'block';
-            alertDiv.classList.remove('success', 'error');
-            alertDiv.innerHTML = '';
+async function adminLogin(){
+  const user=document.getElementById('adminUser').value.trim();
+  const pass=document.getElementById('adminPass').value.trim();
+  const err=document.getElementById('adminErr');
+  err.style.display='none';
+  try{
+    const d=await(await fetch('/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass})})).json();
+    if(d.success){adminToken=d.token;localStorage.setItem('adminToken',adminToken);document.getElementById('adminLogin').style.display='none';document.getElementById('adminDash').style.display='block';loadAdminKeys();}
+    else{err.textContent=d.message;err.style.display='block';}
+  }catch{err.textContent='Lỗi kết nối';err.style.display='block';}
+}
 
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ ten, lop, taikhoan, matkhau })
-                });
+function adminLogout(){adminToken='';localStorage.removeItem('adminToken');document.getElementById('adminLogin').style.display='block';document.getElementById('adminDash').style.display='none';document.getElementById('adminUser').value='';document.getElementById('adminPass').value='';}
 
-                const data = await response.json();
+async function extendKey(){
+  const key=document.getElementById('extKey').value.trim().replace(/-/g,'').toUpperCase();
+  const days=parseInt(document.getElementById('extDays').value)||7;
+  const note=document.getElementById('extNote').value.trim();
+  const res=document.getElementById('extResult');res.style.display='none';
+  try{
+    const d=await(await fetch('/admin/extend-key',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Auth':adminToken},body:JSON.stringify({key,days,note})})).json();
+    res.style.display='block';res.style.color=d.success?'var(--green)':'var(--red)';
+    res.textContent=d.success?`✓ ${d.message} — Hết hạn: ${new Date(d.new_expiry).toLocaleString('vi')}`:`✗ ${d.message}`;
+    if(d.success){loadAdminKeys();document.getElementById('extKey').value='';}
+  }catch{res.textContent='Lỗi kết nối';res.style.display='block';res.style.color='var(--red)';}
+}
 
-                if (data.success) {
-                    alertDiv.classList.add('success');
-                    alertDiv.innerHTML = `✓ ${data.message}`;
-                    form.reset();
+async function loadAdminKeys(){
+  const wrap=document.getElementById('keysWrap');
+  wrap.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px"><span class="spinner"></span>Đang tải...</div>';
+  try{
+    const d=await(await fetch('/admin/keys',{headers:{'X-Admin-Auth':adminToken}})).json();
+    if(!d.success){wrap.innerHTML=`<div style="color:var(--red);font-size:11px;text-align:center;padding:10px">${d.message}</div>`;return;}
+    if(!d.keys.length){wrap.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa có key nào</div>';return;}
+    let html='<table class="keys-table"><thead><tr><th>Key</th><th>IP</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr></thead><tbody>';
+    d.keys.forEach(k=>{
+      const exp=new Date(k.expiry).toLocaleDateString('vi');
+      const badge=k.is_valid?'<span class="badge-valid">● VALID</span>':'<span class="badge-expired">● HẾT HẠN</span>';
+      html+=`<tr><td style="color:var(--cyan);font-size:9px;letter-spacing:1px">${k.key.match(/.{1,5}/g).join('-')}</td><td style="color:var(--muted)">${k.ip}</td><td>${exp}</td><td>${badge}</td><td><button onclick="document.getElementById('extKey').value='${k.key}'" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 7px;border-radius:4px;font-size:9px;cursor:pointer;font-family:'JetBrains Mono',monospace">▲</button></td></tr>`;
+    });
+    html+='</tbody></table>';
+    wrap.innerHTML=html;
+  }catch(e){wrap.innerHTML=`<div style="color:var(--red);font-size:11px;padding:10px">Lỗi: ${e.message}</div>`;}
+}
 
-                    // Reload account list
-                    loadAccounts();
-
-                    // Switch back to select tab
-                    document.querySelector('[data-tab="select"]').click();
-
-                    // Chuyển đến trang nhập ID bài sau 2 giây
-                    setTimeout(() => {
-                        window.location.href = '/homework';
-                    }, 2000);
-                } else {
-                    alertDiv.classList.add('error');
-                    alertDiv.innerHTML = `✗ ${data.message}`;
-                }
-            } catch (error) {
-                alertDiv.classList.add('error');
-                alertDiv.innerHTML = `✗ Lỗi: ${error.message}`;
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
-    </script>
+loadAccounts();
+</script>
 </body>
-
 </html>
