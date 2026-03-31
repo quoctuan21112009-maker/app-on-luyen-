@@ -1,10 +1,5 @@
-from flask import Flask, render_template, request, jsonify, Response
-import csv
-import os
-import subprocess
-import sys
-import json
-import hashlib
+from flask import Flask, render_template, request, jsonify
+import csv, os, subprocess, sys, json, hashlib
 from datetime import datetime, timedelta
 from config import CSV_FILE_PATH
 from sub_module.utils import remove_accents
@@ -12,14 +7,15 @@ from sub_module.utils import remove_accents
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
-# ─── KEY SYSTEM ───────────────────────────────────────────────────────────────
-KEYS_FILE = 'keys.json'
-SECRET_SALT = 'DNS_BATCH_SALT_2025_SECURE'
-ADMIN_USERNAME = 'quoctuan'
-ADMIN_PASSWORD = '21112009'
+# ─── CONFIG ───────────────────────────────────────────────────────────────────
+KEYS_FILE       = 'keys.json'
+SECRET_SALT     = 'DNS_BATCH_SALT_2025_SECURE'
+ADMIN_USERNAME  = 'quoctuan'
+ADMIN_PASSWORD  = '21112009'
 DEFAULT_KEY_DAYS = 1
 
 
+# ─── KEY HELPERS ──────────────────────────────────────────────────────────────
 def load_keys():
     if os.path.exists(KEYS_FILE):
         with open(KEYS_FILE, 'r', encoding='utf-8') as f:
@@ -33,14 +29,12 @@ def save_keys(keys):
 
 
 def generate_key_from_ip(ip: str) -> str:
-    return hashlib.sha256((ip + SECRET_SALT).encode('utf-8')).hexdigest()[:20].upper()
+    return hashlib.sha256((ip + SECRET_SALT).encode()).hexdigest()[:20].upper()
 
 
 def get_client_ip():
-    forwarded = request.headers.get('X-Forwarded-For', '')
-    if forwarded:
-        return forwarded.split(',')[0].strip()
-    return request.remote_addr or '127.0.0.1'
+    fwd = request.headers.get('X-Forwarded-For', '')
+    return fwd.split(',')[0].strip() if fwd else (request.remote_addr or '127.0.0.1')
 
 
 def check_admin_auth():
@@ -48,98 +42,239 @@ def check_admin_auth():
 
 
 # ─── KEY ROUTES ───────────────────────────────────────────────────────────────
-@app.route('/get-key', methods=['GET'])
+@app.route('/get-key')
 def get_key():
-    ip = get_client_ip()
+    """
+    Trả về key của IP hiện tại.
+    Nếu chưa có → TỰ ĐỘNG TẠO với thời hạn DEFAULT_KEY_DAYS.
+    Nếu đã có   → chỉ trả về, KHÔNG tạo lại.
+    """
+    ip  = get_client_ip()
     key = generate_key_from_ip(ip)
     keys = load_keys()
-    now = datetime.now()
+    now  = datetime.now()
+
     if key not in keys:
         expiry = (now + timedelta(days=DEFAULT_KEY_DAYS)).isoformat()
-        keys[key] = {'ip': ip, 'created': now.isoformat(), 'expiry': expiry, 'note': ''}
+        keys[key] = {
+            'ip':      ip,
+            'created': now.isoformat(),
+            'expiry':  expiry,
+            'note':    '',
+            'active':  True,
+        }
         save_keys(keys)
-    kd = keys[key]
-    expiry_dt = datetime.fromisoformat(kd['expiry'])
-    is_valid = expiry_dt > now
+
+    kd       = keys[key]
+    exp_dt   = datetime.fromisoformat(kd['expiry'])
+    is_valid = kd.get('active', True) and exp_dt > now
+
     return jsonify({
-        'success': True, 'key': key, 'ip': ip,
-        'expiry': kd['expiry'], 'is_valid': is_valid,
-        'seconds_remaining': max(0, int((expiry_dt - now).total_seconds())),
-        'note': kd.get('note', '')
+        'success':           True,
+        'key':               key,
+        'ip':                ip,
+        'expiry':            kd['expiry'],
+        'is_valid':          is_valid,
+        'seconds_remaining': max(0, int((exp_dt - now).total_seconds())),
+        'note':              kd.get('note', ''),
+        'created':           kd.get('created', ''),
     })
 
 
 @app.route('/verify-key', methods=['POST'])
 def verify_key():
-    data = request.json
-    key = data.get('key', '').strip().upper()
+    """Xác thực key (dùng trên trang homework trước khi cho chạy tool)."""
+    data = request.json or {}
+    key  = data.get('key', '').strip().replace('-', '').upper()
     keys = load_keys()
+
     if key not in keys:
         return jsonify({'success': False, 'message': 'Key không tồn tại trong hệ thống'}), 400
-    expiry_dt = datetime.fromisoformat(keys[key]['expiry'])
-    now = datetime.now()
-    if expiry_dt < now:
+
+    kd     = keys[key]
+    exp_dt = datetime.fromisoformat(kd['expiry'])
+    now    = datetime.now()
+
+    if not kd.get('active', True):
+        return jsonify({'success': False, 'message': 'Key đã bị vô hiệu hoá'}), 400
+    if exp_dt < now:
         return jsonify({'success': False, 'message': 'Key đã hết hạn. Liên hệ admin để gia hạn'}), 400
+
     return jsonify({
-        'success': True, 'message': 'Xác thực thành công',
-        'expiry': keys[key]['expiry'],
-        'seconds_remaining': max(0, int((expiry_dt - now).total_seconds())),
-        'ip': keys[key]['ip']
+        'success':           True,
+        'message':           'Xác thực thành công',
+        'expiry':            kd['expiry'],
+        'seconds_remaining': max(0, int((exp_dt - now).total_seconds())),
+        'ip':                kd['ip'],
     })
 
 
+@app.route('/verify-key-by-ip')
+def verify_key_by_ip():
+    """Kiểm tra key của IP hiện tại (dùng khi load homework.html)."""
+    ip   = get_client_ip()
+    key  = generate_key_from_ip(ip)
+    keys = load_keys()
+    now  = datetime.now()
+
+    if key not in keys:
+        return jsonify({'success': False, 'message': 'Bạn chưa có key. Vui lòng lấy key tại trang chủ.', 'key': key, 'ip': ip})
+
+    kd     = keys[key]
+    exp_dt = datetime.fromisoformat(kd['expiry'])
+
+    if not kd.get('active', True):
+        return jsonify({'success': False, 'message': 'Key của bạn đã bị vô hiệu hoá. Liên hệ admin.', 'key': key, 'ip': ip})
+    if exp_dt < now:
+        return jsonify({'success': False, 'message': 'Key đã hết hạn. Liên hệ admin để gia hạn.', 'key': key, 'ip': ip,
+                        'expiry': kd['expiry']})
+
+    return jsonify({
+        'success':           True,
+        'key':               key,
+        'ip':                ip,
+        'expiry':            kd['expiry'],
+        'seconds_remaining': max(0, int((exp_dt - now).total_seconds())),
+    })
+
+
+# ─── ADMIN ROUTES ─────────────────────────────────────────────────────────────
 @app.route('/admin/login', methods=['POST'])
 def admin_login():
-    data = request.json
+    data = request.json or {}
     if data.get('username') == ADMIN_USERNAME and data.get('password') == ADMIN_PASSWORD:
         return jsonify({'success': True, 'token': f"{ADMIN_USERNAME}:{ADMIN_PASSWORD}"})
     return jsonify({'success': False, 'message': 'Sai tài khoản hoặc mật khẩu'}), 401
 
 
-@app.route('/admin/keys', methods=['GET'])
+@app.route('/admin/keys')
 def admin_get_keys():
     if not check_admin_auth():
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     keys = load_keys()
-    now = datetime.now()
+    now  = datetime.now()
     result = []
     for key, kd in keys.items():
         exp_dt = datetime.fromisoformat(kd['expiry'])
         result.append({
-            'key': key, 'ip': kd.get('ip', ''),
-            'expiry': kd['expiry'], 'is_valid': exp_dt > now,
-            'created': kd.get('created', ''), 'note': kd.get('note', '')
+            'key':      key,
+            'ip':       kd.get('ip', ''),
+            'expiry':   kd['expiry'],
+            'is_valid': kd.get('active', True) and exp_dt > now,
+            'active':   kd.get('active', True),
+            'created':  kd.get('created', ''),
+            'note':     kd.get('note', ''),
         })
     result.sort(key=lambda x: x['created'], reverse=True)
     return jsonify({'success': True, 'keys': result})
 
 
-@app.route('/admin/extend-key', methods=['POST'])
-def admin_extend_key():
+@app.route('/admin/set-expiry', methods=['POST'])
+def admin_set_expiry():
+    """Đặt ngày giờ hết hạn chính xác cho key."""
     if not check_admin_auth():
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
-    data = request.json
-    key = data.get('key', '').strip().upper()
-    days = int(data.get('days', 7))
+    data = request.json or {}
+    key  = data.get('key', '').strip().replace('-', '').upper()
+    # expiry_str: "2025-12-31T23:59:59" hoặc "2025-12-31 23:59:59"
+    expiry_str = data.get('expiry', '').strip().replace(' ', 'T')
     note = data.get('note', '')
+
     keys = load_keys()
     if key not in keys:
         return jsonify({'success': False, 'message': 'Key không tồn tại'}), 400
-    now = datetime.now()
-    base = max(now, datetime.fromisoformat(keys[key]['expiry']))
-    new_expiry = base + timedelta(days=days)
+
+    try:
+        new_expiry = datetime.fromisoformat(expiry_str)
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Định dạng ngày giờ không hợp lệ (dùng YYYY-MM-DDTHH:MM:SS)'}), 400
+
     keys[key]['expiry'] = new_expiry.isoformat()
     if note:
         keys[key]['note'] = note
     save_keys(keys)
-    return jsonify({'success': True, 'message': f'Đã gia hạn {days} ngày', 'new_expiry': new_expiry.isoformat()})
+    return jsonify({'success': True, 'message': 'Đã cập nhật hạn key', 'new_expiry': new_expiry.isoformat()})
+
+
+@app.route('/admin/extend-key', methods=['POST'])
+def admin_extend_key():
+    """Gia hạn thêm N ngày từ hết hạn hiện tại (hoặc từ now nếu đã expired)."""
+    if not check_admin_auth():
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.json or {}
+    key  = data.get('key', '').strip().replace('-', '').upper()
+    days = int(data.get('days', 7))
+    note = data.get('note', '')
+
+    keys = load_keys()
+    if key not in keys:
+        return jsonify({'success': False, 'message': 'Key không tồn tại'}), 400
+
+    now   = datetime.now()
+    base  = max(now, datetime.fromisoformat(keys[key]['expiry']))
+    new_e = base + timedelta(days=days)
+    keys[key]['expiry'] = new_e.isoformat()
+    keys[key]['active'] = True
+    if note:
+        keys[key]['note'] = note
+    save_keys(keys)
+    return jsonify({'success': True, 'message': f'Đã gia hạn {days} ngày', 'new_expiry': new_e.isoformat()})
+
+
+@app.route('/admin/create-key', methods=['POST'])
+def admin_create_key():
+    """Admin tạo key thủ công cho một IP bất kỳ."""
+    if not check_admin_auth():
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.json or {}
+    ip   = data.get('ip', '').strip()
+    days = int(data.get('days', DEFAULT_KEY_DAYS))
+    note = data.get('note', '')
+
+    if not ip:
+        return jsonify({'success': False, 'message': 'Vui lòng nhập IP'}), 400
+
+    key  = generate_key_from_ip(ip)
+    keys = load_keys()
+    now  = datetime.now()
+
+    if key in keys:
+        # Nếu đã tồn tại → chỉ gia hạn thêm
+        base  = max(now, datetime.fromisoformat(keys[key]['expiry']))
+        new_e = base + timedelta(days=days)
+        keys[key]['expiry'] = new_e.isoformat()
+        keys[key]['active'] = True
+        if note:
+            keys[key]['note'] = note
+        save_keys(keys)
+        return jsonify({'success': True, 'message': f'Key đã tồn tại, đã gia hạn thêm {days} ngày', 'key': key, 'new_expiry': new_e.isoformat()})
+
+    expiry = (now + timedelta(days=days)).isoformat()
+    keys[key] = {'ip': ip, 'created': now.isoformat(), 'expiry': expiry, 'note': note, 'active': True}
+    save_keys(keys)
+    return jsonify({'success': True, 'message': f'Đã tạo key mới cho IP {ip}', 'key': key, 'expiry': expiry})
+
+
+@app.route('/admin/toggle-key', methods=['POST'])
+def admin_toggle_key():
+    """Bật / tắt key."""
+    if not check_admin_auth():
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    key  = request.json.get('key', '').strip().upper()
+    keys = load_keys()
+    if key not in keys:
+        return jsonify({'success': False, 'message': 'Key không tồn tại'}), 400
+    keys[key]['active'] = not keys[key].get('active', True)
+    save_keys(keys)
+    state = 'kích hoạt' if keys[key]['active'] else 'vô hiệu hoá'
+    return jsonify({'success': True, 'message': f'Đã {state} key', 'active': keys[key]['active']})
 
 
 @app.route('/admin/delete-key', methods=['POST'])
 def admin_delete_key():
     if not check_admin_auth():
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
-    key = request.json.get('key', '').strip().upper()
+    key  = request.json.get('key', '').strip().upper()
     keys = load_keys()
     if key not in keys:
         return jsonify({'success': False, 'message': 'Key không tồn tại'}), 400
@@ -152,20 +287,18 @@ def admin_delete_key():
 def ensure_csv_exists():
     try:
         if not os.path.exists(CSV_FILE_PATH):
-            print(f"[INFO] Creating new CSV at {CSV_FILE_PATH}")
             with open(CSV_FILE_PATH, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-                writer.writerow(['STT', 'Mã học sinh', 'Họ và tên', 'Lớp', 'Tài khoản', 'Mật khẩu', 'Mã đăng nhập cho PH', 'isWrongPass', ''])
+                csv.writer(f, delimiter=';').writerow(
+                    ['STT', 'Mã học sinh', 'Họ và tên', 'Lớp', 'Tài khoản', 'Mật khẩu', 'Mã đăng nhập cho PH', 'isWrongPass', ''])
         else:
             with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8') as f:
-                first_line = f.readline().rstrip('\n')
-                if '; ' in first_line or ' ;' in first_line:
-                    f.seek(0)
+                first = f.readline().rstrip('\n')
+            if '; ' in first or ' ;' in first:
+                with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8') as f:
                     lines = f.readlines()
-                    fixed_header = first_line.replace('; ', ';').replace(' ;', ';')
-                    with open(CSV_FILE_PATH, 'w', newline='', encoding='utf-8') as fw:
-                        fw.write(fixed_header + '\n')
-                        fw.writelines(lines[1:])
+                with open(CSV_FILE_PATH, 'w', newline='', encoding='utf-8') as f:
+                    f.write(first.replace('; ', ';').replace(' ;', ';') + '\n')
+                    f.writelines(lines[1:])
     except Exception as e:
         print(f"[ERROR] ensure_csv_exists: {e}")
 
@@ -186,33 +319,22 @@ def get_next_stt():
 
 
 def _clean_row(row):
-    cleaned = {}
-    for k, v in row.items():
-        ck = (k.strip() if k else '')
-        cv = (v[0].strip() if isinstance(v, list) and v else (v.strip() if v else ''))
-        cleaned[ck] = cv
-    return cleaned
+    return {(k.strip() if k else ''): (v[0].strip() if isinstance(v, list) and v else (v.strip() if v else ''))
+            for k, v in row.items()}
 
 
 def get_account_from_csv(taikhoan):
     try:
         ensure_csv_exists()
         with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8-sig') as f:
-            reader = csv.DictReader(f, delimiter=';')
-            for row in reader:
+            for row in csv.DictReader(f, delimiter=';'):
                 rc = _clean_row(row)
-                email = (rc.get('Tài khoản') or '').strip()
-                if email.lower() == taikhoan.lower():
-                    return {
-                        'name': (rc.get('Họ và tên') or '').strip(),
-                        'email': email,
-                        'password': (rc.get('Mật khẩu') or '').strip(),
-                        'class': (rc.get('Lớp') or '').strip()
-                    }
-        return None
+                if rc.get('Tài khoản', '').lower() == taikhoan.lower():
+                    return {'name': rc.get('Họ và tên', ''), 'email': rc.get('Tài khoản', ''),
+                            'password': rc.get('Mật khẩu', ''), 'class': rc.get('Lớp', '')}
     except Exception as e:
         print(f"Error: {e}")
-        return None
+    return None
 
 
 # ─── MAIN ROUTES ──────────────────────────────────────────────────────────────
@@ -221,84 +343,74 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/register', methods=['POST'])
-def register():
-    try:
-        data = request.json
-        ten = remove_accents(data.get('ten', '').strip())
-        lop = data.get('lop', '').strip()
-        taikhoan = data.get('taikhoan', '').strip()
-        matkhau = data.get('matkhau', '').strip()
-        if not all([ten, lop, taikhoan, matkhau]):
-            return jsonify({'success': False, 'message': 'Vui lòng nhập đầy đủ thông tin'}), 400
-        ensure_csv_exists()
-        next_stt = get_next_stt()
-        with open(CSV_FILE_PATH, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow([next_stt, '', ten, lop, taikhoan, matkhau, '', '', ''])
-        return jsonify({'success': True, 'message': f'Đăng ký thành công cho {ten}', 'stt': next_stt}), 200
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
-
-
 @app.route('/homework')
 def homework():
     return render_template('homework.html')
 
 
-@app.route('/get-accounts', methods=['GET'])
+@app.route('/get-accounts')
 def get_accounts():
     try:
         ensure_csv_exists()
         accounts = []
         with open(CSV_FILE_PATH, 'r', newline='', encoding='utf-8-sig') as f:
-            reader = csv.DictReader(f, delimiter=';')
-            for row in reader:
-                if not row:
-                    continue
+            for row in csv.DictReader(f, delimiter=';'):
                 rc = _clean_row(row)
-                email = rc.get('Tài khoản', '')
-                if email:
-                    accounts.append({'name': rc.get('Họ và tên', ''), 'email': email})
-        return jsonify({'success': True, 'accounts': accounts}), 200
+                if rc.get('Tài khoản'):
+                    accounts.append({'name': rc.get('Họ và tên', ''), 'email': rc['Tài khoản']})
+        return jsonify({'success': True, 'accounts': accounts})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    try:
+        data    = request.json or {}
+        ten     = remove_accents(data.get('ten', '').strip())
+        lop     = data.get('lop', '').strip()
+        tk      = data.get('taikhoan', '').strip()
+        mk      = data.get('matkhau', '').strip()
+        if not all([ten, lop, tk, mk]):
+            return jsonify({'success': False, 'message': 'Vui lòng nhập đầy đủ thông tin'}), 400
+        ensure_csv_exists()
+        with open(CSV_FILE_PATH, 'a', newline='', encoding='utf-8') as f:
+            csv.writer(f, delimiter=';').writerow([get_next_stt(), '', ten, lop, tk, mk, '', '', ''])
+        return jsonify({'success': True, 'message': f'Đăng ký thành công cho {ten}'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @app.route('/run', methods=['POST'])
 def run_main():
     try:
-        data = request.json
-        logid = data.get('logid', '').strip()
+        data    = request.json or {}
+        logid   = data.get('logid', '').strip()
         taikhoan = data.get('taikhoan', '').strip()
         if not logid:
             return jsonify({'success': False, 'message': 'Vui lòng nhập ID bài'}), 400
         if not taikhoan:
             return jsonify({'success': False, 'message': 'Vui lòng chọn tài khoản'}), 400
-        account_info = get_account_from_csv(taikhoan)
-        if not account_info:
+        if not get_account_from_csv(taikhoan):
             return jsonify({'success': False, 'message': f'Tài khoản {taikhoan} không tồn tại'}), 400
 
         env = os.environ.copy()
         env['PYTHONIOENCODING'] = 'utf-8'
-        process = subprocess.Popen(
+        proc = subprocess.Popen(
             [sys.executable, 'main.py', '--logid', logid, '--account', taikhoan],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            text=False, env=env,
-            cwd=os.path.dirname(os.path.abspath(__file__))
+            text=False, env=env, cwd=os.path.dirname(os.path.abspath(__file__))
         )
-        output_bytes, _ = process.communicate(timeout=600)
-        returncode = process.returncode
+        out_bytes, _ = proc.communicate(timeout=600)
 
         output = ''
         for enc in ['utf-8', 'cp1252', 'latin-1']:
             try:
-                output = output_bytes.decode(enc)
-                break
+                output = out_bytes.decode(enc); break
             except (UnicodeDecodeError, AttributeError):
                 continue
         if not output:
-            output = output_bytes.decode('utf-8', errors='replace')
+            output = out_bytes.decode('utf-8', errors='replace')
 
         log_content = ''
         if os.path.exists('latest.log'):
@@ -308,22 +420,20 @@ def run_main():
             except:
                 pass
 
-        success = returncode == 0
+        success = proc.returncode == 0
         return jsonify({
-            'success': success,
-            'status': '✓ Thành công' if success else '✗ Lỗi',
-            'message': output,
-            'log_file': log_content,
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }), 200
-
+            'success':   success,
+            'status':    '✓ Thành công' if success else '✗ Lỗi',
+            'message':   output,
+            'log_file':  log_content,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        })
     except subprocess.TimeoutExpired:
-        process.kill()
-        return jsonify({'success': False, 'message': 'Timeout: Chương trình chạy quá lâu (>10 phút)'}), 500
+        proc.kill()
+        return jsonify({'success': False, 'message': 'Timeout: chương trình chạy quá 10 phút'}), 500
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({'success': False, 'message': f'Lỗi: {str(e)}'}), 500
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 if __name__ == '__main__':
