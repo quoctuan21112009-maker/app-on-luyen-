@@ -1,875 +1,424 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ONLUYEN BATCH — Quản Lý Key</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #070b14;
-      --bg2: #0d1422;
-      --card: rgba(255,255,255,0.032);
-      --border: rgba(0,212,255,0.12);
-      --border-glow: rgba(0,212,255,0.4);
-      --cyan: #00d4ff;
-      --cyan-dim: rgba(0,212,255,0.12);
-      --purple: #a855f7;
-      --purple-dim: rgba(168,85,247,0.12);
-      --green: #10f590;
-      --green-dim: rgba(16,245,144,0.12);
-      --red: #ff4d6d;
-      --red-dim: rgba(255,77,109,0.12);
-      --orange: #fb923c;
-      --text: #e2e8f0;
-      --text-muted: #64748b;
-      --text-dim: #94a3b8;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNS BATCH — Làm Bài</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050508;--surface:rgba(255,255,255,0.03);
+  --border:rgba(0,230,255,0.15);--cyan:#00e5ff;--green:#00ff88;
+  --red:#ff4560;--yellow:#ffd600;--orange:#ff9500;
+  --text:#c8d8e8;--muted:#4a6070;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);
+     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);}
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
-      padding: 24px 20px;
-      overflow-x: hidden;
-    }
+.wrapper{position:relative;z-index:1;width:100%;max-width:560px;}
 
-    body::before {
-      content:'';
-      position:fixed; inset:0;
-      background-image:
-        linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events:none; z-index:0;
-      animation: gridShift 25s linear infinite;
-    }
-    body::after {
-      content:'';
-      position:fixed; inset:0;
-      background: radial-gradient(ellipse 70% 50% at 20% 50%, rgba(168,85,247,0.06) 0%, transparent 60%),
-                  radial-gradient(ellipse 50% 40% at 80% 20%, rgba(0,212,255,0.05) 0%, transparent 50%);
-      pointer-events:none; z-index:0;
-    }
-    @keyframes gridShift { from{transform:translateY(0)} to{transform:translateY(40px)} }
+/* ── KEY GATE ── */
+#keyGate{
+  background:var(--surface);border:1px solid rgba(255,69,96,0.3);border-radius:16px;
+  padding:36px 32px;backdrop-filter:blur(20px);
+  box-shadow:0 0 60px rgba(255,69,96,0.05),inset 0 1px 0 rgba(255,255,255,0.05);
+  animation:fadeIn .5s ease;
+}
+.gate-icon{text-align:center;font-size:40px;margin-bottom:16px;}
+.gate-title{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;
+  color:var(--red);text-align:center;letter-spacing:2px;margin-bottom:6px;}
+.gate-sub{font-size:11px;color:var(--muted);text-align:center;letter-spacing:1px;margin-bottom:24px;}
+.gate-info{background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);
+  border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:var(--muted);line-height:1.8;}
+.gate-info span{color:var(--cyan);}
 
-    .page { position:relative; z-index:1; max-width: 900px; margin:0 auto; animation: fadeUp 0.5s ease both; }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+input,select{width:100%;padding:12px 14px;background:rgba(0,0,0,0.4);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;
+  outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;}
+input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.1);}
+input::placeholder{color:var(--muted);}
+select option{background:#0d1117;}
 
-    /* Header */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .header-left { display:flex; align-items:center; gap: 14px; }
-    .back-link {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 13px;
-      font-family: 'IBM Plex Mono', monospace;
-      transition: color 0.2s;
-    }
-    .back-link:hover { color: var(--cyan); }
-    .header-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 26px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .header-title span { color: var(--purple); }
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 5px 12px;
-      background: var(--green-dim);
-      border: 1px solid rgba(16,245,144,0.25);
-      border-radius: 100px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      color: var(--green);
-    }
-    .live-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite; }
-    @keyframes pulse {0%,100%{opacity:1}50%{opacity:0.3}}
+.btn{width:100%;padding:13px;border:none;border-radius:8px;
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
+  letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.btn-cyan{background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(0,229,255,0.04));
+  border:1px solid var(--cyan);color:var(--cyan);}
+.btn-cyan:hover:not(:disabled){background:rgba(0,229,255,0.2);box-shadow:0 0 20px rgba(0,229,255,0.25);transform:translateY(-1px);}
+.btn-green{background:linear-gradient(135deg,rgba(0,255,136,0.12),rgba(0,255,136,0.04));
+  border:1px solid var(--green);color:var(--green);}
+.btn-green:hover:not(:disabled){background:rgba(0,255,136,0.2);box-shadow:0 0 20px rgba(0,255,136,0.25);transform:translateY(-1px);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
 
-    /* View switcher */
-    .view-switch {
-      display: inline-flex;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 4px;
-      gap: 4px;
-      margin-bottom: 24px;
-    }
-    .view-btn {
-      padding: 8px 18px;
-      border: none;
-      border-radius: 7px;
-      background: transparent;
-      color: var(--text-muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .view-btn.active {
-      background: var(--cyan-dim);
-      color: var(--cyan);
-      border: 1px solid rgba(0,212,255,0.2);
-    }
+.gate-err{color:var(--red);font-size:11px;margin-top:10px;display:none;text-align:center;}
+.back-link{display:block;text-align:center;margin-top:16px;font-size:11px;color:var(--muted);text-decoration:none;}
+.back-link:hover{color:var(--cyan);}
 
-    /* Card */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 0 40px rgba(0,212,255,0.03), 0 20px 40px rgba(0,0,0,0.35);
-      margin-bottom: 20px;
-    }
-    .card-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .card-title-icon {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-    }
-    .icon-cyan { background: var(--cyan-dim); border: 1px solid rgba(0,212,255,0.2); }
-    .icon-purple { background: var(--purple-dim); border: 1px solid rgba(168,85,247,0.2); }
+/* ── MAIN TOOL ── */
+#mainTool{display:none;animation:fadeIn .5s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-    /* IP Key Section */
-    .ip-display {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 18px;
-      background: rgba(0,0,0,0.25);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    .ip-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      white-space: nowrap;
-    }
-    .ip-value {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 15px;
-      color: var(--cyan);
-      font-weight: 600;
-      flex: 1;
-    }
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:36px 32px;backdrop-filter:blur(20px);margin-bottom:16px;
+  box-shadow:0 0 60px rgba(0,229,255,0.05),inset 0 1px 0 rgba(255,255,255,0.05);}
 
-    /* Key Display */
-    .key-display-box {
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(168,85,247,0.25);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin: 20px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .key-value {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--purple);
-      letter-spacing: 3px;
-      word-break: break-all;
-    }
-    .key-placeholder {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 22px;
-      color: var(--text-muted);
-      letter-spacing: 3px;
-    }
-    .copy-btn {
-      padding: 8px 16px;
-      background: rgba(168,85,247,0.15);
-      border: 1px solid rgba(168,85,247,0.3);
-      border-radius: 8px;
-      color: var(--purple);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .copy-btn:hover { background: rgba(168,85,247,0.25); }
-    .copy-btn.copied { color: var(--green); border-color: rgba(16,245,144,0.3); background: rgba(16,245,144,0.1); }
+.logo{text-align:center;margin-bottom:24px;}
+.logo-title{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;letter-spacing:4px;
+  color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.4);}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:4px;}
 
-    /* Key info */
-    .key-meta {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .meta-item {
-      flex: 1;
-      min-width: 120px;
-      padding: 12px 16px;
-      background: rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-    }
-    .meta-label {
-      font-size: 11px;
-      font-family: 'IBM Plex Mono', monospace;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-    }
-    .meta-value {
-      font-size: 14px;
-      color: var(--text);
-      font-weight: 500;
-    }
-    .meta-value.good { color: var(--green); }
-    .meta-value.warn { color: var(--orange); }
-    .meta-value.bad { color: var(--red); }
+/* Key status bar */
+.key-bar{display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);
+  border-radius:8px;padding:10px 14px;margin-bottom:20px;flex-wrap:wrap;gap:8px;}
+.key-bar.invalid{background:rgba(255,69,96,0.05);border-color:rgba(255,69,96,0.2);}
+.key-bar-left{display:flex;align-items:center;gap:8px;font-size:11px;}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-valid{background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
+.dot-invalid{background:var(--red);box-shadow:0 0 8px var(--red);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.key-bar-right{font-size:10px;color:var(--yellow);font-weight:600;}
 
-    /* Btn */
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 10px;
-      font-family: 'Syne', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.25s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-primary { background: linear-gradient(135deg, var(--purple), #7e22ce); color: #fff; }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(168,85,247,0.3); }
-    .btn-cyan { background: linear-gradient(135deg, var(--cyan), #0099bb); color: #070b14; }
-    .btn-cyan:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,255,0.3); }
-    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
-    .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
-    .btn-danger { background: var(--red-dim); border: 1px solid rgba(255,77,109,0.3); color: var(--red); }
-    .btn-danger:hover { background: rgba(255,77,109,0.2); }
-    .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 7px; }
-    .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none!important; }
+.section-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
-    /* Form */
-    .field { margin-bottom: 16px; }
-    .field label {
-      display:block;
-      font-size:11px;
-      font-family:'IBM Plex Mono',monospace;
-      color:var(--text-muted);
-      text-transform:uppercase;
-      letter-spacing:1px;
-      margin-bottom:7px;
-    }
-    .field input {
-      width:100%;
-      padding:12px 16px;
-      background:rgba(0,0,0,0.3);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:10px;
-      color:var(--text);
-      font-family:'DM Sans',sans-serif;
-      font-size:15px;
-      outline:none;
-      transition:border-color 0.25s, box-shadow 0.25s;
-    }
-    .field input:focus {
-      border-color: var(--purple);
-      box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
-    }
-    .field input::placeholder { color: var(--text-muted); }
+.form-group{margin-bottom:18px;}
+.input-note{font-size:10px;color:var(--muted);margin-top:6px;}
 
-    /* Alert */
-    .alert {
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      margin-bottom: 18px;
-      display: none;
-      align-items: center;
-      gap: 10px;
-    }
-    .alert.show { display:flex; animation: fadeIn 0.2s ease; }
-    .alert.success { background:var(--green-dim); border:1px solid rgba(16,245,144,0.25); color:var(--green); }
-    .alert.error { background:var(--red-dim); border:1px solid rgba(255,77,109,0.25); color:var(--red); }
-    .alert.info { background:var(--cyan-dim); border:1px solid rgba(0,212,255,0.25); color:var(--cyan); }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+/* Run button */
+.run-btn{width:100%;padding:16px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,rgba(0,255,136,0.15),rgba(0,229,255,0.08));
+  border:1px solid var(--green);color:var(--green);
+  font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;letter-spacing:3px;
+  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.run-btn::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,255,136,0),rgba(0,255,136,0.08));
+  transform:translateX(-100%);transition:transform .4s;}
+.run-btn:hover::before{transform:translateX(0);}
+.run-btn:hover:not(:disabled){box-shadow:0 0 30px rgba(0,255,136,0.3);transform:translateY(-2px);}
+.run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
 
-    /* Keys table */
-    .keys-table { width:100%; border-collapse:collapse; }
-    .keys-table th {
-      padding: 10px 14px;
-      text-align: left;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 1px solid var(--border);
-    }
-    .keys-table td {
-      padding: 14px;
-      font-size: 13px;
-      color: var(--text);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .keys-table tr:hover td { background: rgba(255,255,255,0.02); }
-    .key-cell {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      color: var(--purple);
-      letter-spacing: 1px;
-    }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 10px;
-      border-radius: 100px;
-      font-size: 11px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-weight: 600;
-    }
-    .status-active { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,245,144,0.2); }
-    .status-expired { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,77,109,0.2); }
-    .status-revoked { background: rgba(100,116,139,0.1); color: var(--text-muted); border: 1px solid rgba(100,116,139,0.2); }
+/* Output */
+.output-box{background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:10px;
+  padding:20px;margin-top:20px;display:none;animation:fadeIn .3s;}
+.output-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.output-status{font-size:12px;font-weight:700;letter-spacing:1px;}
+.output-status.ok{color:var(--green);}
+.output-status.err{color:var(--red);}
+.output-ts{font-size:10px;color:var(--muted);}
+.output-log{font-size:11px;line-height:1.7;color:var(--text);white-space:pre-wrap;
+  word-break:break-word;max-height:300px;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.output-log::-webkit-scrollbar{width:4px;}
+.output-log::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
-    /* Actions row */
-    .actions-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:20px; }
+/* Spinner */
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border);
+  border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Section visibility */
-    .section { display:none; }
-    .section.active { display:block; }
+.alert{padding:11px 14px;border-radius:8px;font-size:12px;margin-bottom:16px;
+  display:none;border-left:3px solid;animation:fadeIn .3s;}
+.alert.show{display:block;}
+.alert-error{background:rgba(255,69,96,0.08);border-color:var(--red);color:var(--red);}
+.alert-success{background:rgba(0,255,136,0.08);border-color:var(--green);color:var(--green);}
+.alert-info{background:rgba(0,229,255,0.08);border-color:var(--cyan);color:var(--cyan);}
 
-    /* Divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 24px 0;
-    }
+.bottom-link{text-align:center;font-size:11px;color:var(--muted);margin-top:4px;}
+.bottom-link a{color:var(--cyan);text-decoration:none;}
+.bottom-link a:hover{text-shadow:0 0 10px rgba(0,229,255,0.5);}
 
-    /* Admin unlock hint */
-    .admin-hint {
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      font-family: 'IBM Plex Mono', monospace;
-      margin-top: 16px;
-    }
-    .admin-hint a { color: var(--purple); cursor:pointer; text-decoration:none; }
-    .admin-hint a:hover { text-decoration: underline; }
-
-    /* Empty state */
-    .empty-state {
-      text-align:center;
-      padding: 40px;
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-    .empty-state svg { opacity:0.3; margin-bottom:12px; }
-  </style>
+@media(max-width:400px){.card{padding:24px 16px;}}
+</style>
 </head>
 <body>
-<div class="page">
+<div class="wrapper">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <a href="/" class="back-link">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-        Quay lại
-      </a>
-      <div class="header-title">Quản Lý <span>Key</span></div>
+  <!-- ══════════ KEY GATE ══════════ -->
+  <div id="keyGate">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">XÁC THỰC KEY</div>
+    <div class="gate-sub">Bạn cần key hợp lệ để sử dụng công cụ này</div>
+
+    <div class="gate-info" id="gateInfo">
+      <span class="spinner"></span> Đang kiểm tra key của bạn...
     </div>
-    <div class="live-badge">
-      <div class="live-dot"></div>
-      <span>Key System Active</span>
+
+    <div id="gateInputArea" style="display:none">
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Nhập Key của bạn</label>
+        <input type="text" id="keyInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
+          maxlength="24" autocomplete="off" autocapitalize="characters"
+          onkeydown="if(event.key==='Enter')submitKey()"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9\-]/g,'')">
+      </div>
+      <button class="btn btn-cyan" onclick="submitKey()">XÁC THỰC &amp; VÀO TRANG</button>
+      <div class="gate-err" id="gateErr"></div>
     </div>
+
+    <a href="/" class="back-link">← Quay lại trang chủ để lấy key</a>
   </div>
 
-  <!-- View switcher -->
-  <div class="view-switch">
-    <button class="view-btn active" onclick="switchView('user')">🔑 Lấy Key Của Tôi</button>
-    <button class="view-btn" onclick="switchView('admin')" id="adminTabBtn">⚙️ Admin Panel</button>
-  </div>
-
-  <!-- ============ USER VIEW ============ -->
-  <div id="view-user" class="section active">
-
-    <!-- IP Detection Card -->
+  <!-- ══════════ MAIN TOOL ══════════ -->
+  <div id="mainTool">
     <div class="card">
-      <div class="card-title">
-        <div class="card-title-icon icon-cyan">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-        </div>
-        Phát Hiện IP & Tạo Key
+      <div class="logo">
+        <div class="logo-title">DNS BATCH</div>
+        <div class="logo-sub">ONLUYEN AUTOMATION TOOL</div>
       </div>
 
-      <div id="userAlert" class="alert"></div>
-
-      <div class="ip-display">
-        <span class="ip-label">IP của bạn</span>
-        <span class="ip-value" id="ipValue">Đang phát hiện...</span>
-        <svg id="ipLoading" width="16" height="16" viewBox="0 0 24 24" fill="var(--text-muted)" style="animation:spin 1s linear infinite;flex-shrink:0">
-          <path d="M12 4V2A10 10 0 002 12h2a8 8 0 018-8z"/>
-        </svg>
+      <!-- Key status bar -->
+      <div class="key-bar" id="keyBar">
+        <div class="key-bar-left">
+          <div class="status-dot dot-valid" id="barDot"></div>
+          <span style="color:var(--green);font-size:11px;">KEY HỢP LỆ</span>
+          <span style="color:var(--muted);font-size:10px;" id="barIP"></span>
+        </div>
+        <div class="key-bar-right" id="barCountdown"></div>
       </div>
 
-      <div class="key-display-box">
-        <div>
-          <div style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Key của bạn</div>
-          <div id="keyValue" class="key-placeholder">••••-••••-••••-••••</div>
-        </div>
-        <button class="copy-btn" id="copyBtn" onclick="copyKey()" disabled>COPY</button>
+      <div id="toolAlert" class="alert"></div>
+
+      <div class="section-label">Thông tin bài làm</div>
+
+      <div class="form-group">
+        <label>ID Bài Tập / Bài Kiểm Tra</label>
+        <input type="text" id="logid" placeholder="Nhập ID bài (vd: 123456789)"
+          autocomplete="off"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <div class="input-note">⚠ Chỉ nhập số — lấy từ URL trang bài trên OnLuyện</div>
       </div>
 
-      <div class="key-meta" id="keyMeta" style="display:none">
-        <div class="meta-item">
-          <div class="meta-label">Trạng thái</div>
-          <div class="meta-value good" id="metaStatus">Hoạt động</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Ngày tạo</div>
-          <div class="meta-value" id="metaCreated">—</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Hết hạn</div>
-          <div class="meta-value" id="metaExpiry">—</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Còn lại</div>
-          <div class="meta-value" id="metaDays">—</div>
-        </div>
+      <div class="form-group">
+        <label>Tài Khoản Sử Dụng</label>
+        <select id="taikhoan">
+          <option value="">-- Đang tải tài khoản... --</option>
+        </select>
       </div>
 
-      <button class="btn btn-primary" id="genBtn" onclick="generateKey()" disabled>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        Tạo / Làm Mới Key
+      <button class="run-btn" id="runBtn" onclick="runBatch()" disabled>
+        ▶ CHẠY TỰ ĐỘNG
       </button>
     </div>
 
-    <!-- How to use -->
-    <div class="card">
-      <div class="card-title">
-        <div class="card-title-icon icon-cyan">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--cyan)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        </div>
-        Hướng Dẫn Sử Dụng
+    <!-- Output -->
+    <div class="output-box" id="outputBox">
+      <div class="output-header">
+        <span class="output-status" id="outputStatus"></span>
+        <span class="output-ts" id="outputTs"></span>
       </div>
-      <div style="display:grid;gap:12px">
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          <div style="width:24px;height:24px;border-radius:6px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan);font-weight:700">1</div>
-          <div style="font-size:14px;color:var(--text-dim);line-height:1.6">IP của bạn được phát hiện tự động. Nhấn <strong style="color:var(--text)">Tạo / Làm Mới Key</strong> để nhận key.</div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          <div style="width:24px;height:24px;border-radius:6px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan);font-weight:700">2</div>
-          <div style="font-size:14px;color:var(--text-dim);line-height:1.6">Copy key và dán vào ô <strong style="color:var(--text)">Xác Thực Key</strong> trên trang làm bài.</div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          <div style="width:24px;height:24px;border-radius:6px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan);font-weight:700">3</div>
-          <div style="font-size:14px;color:var(--text-dim);line-height:1.6">Key mặc định có hiệu lực <strong style="color:var(--text)">30 ngày</strong>. Liên hệ admin để gia hạn.</div>
-        </div>
-      </div>
+      <div class="output-log" id="outputLog"></div>
     </div>
 
-    <div class="admin-hint">
-      Bạn là admin? <a onclick="switchView('admin')">Truy cập Admin Panel →</a>
-    </div>
-  </div>
-
-  <!-- ============ ADMIN VIEW ============ -->
-  <div id="view-admin" class="section">
-
-    <!-- Admin login -->
-    <div id="adminLoginCard" class="card">
-      <div class="card-title">
-        <div class="card-title-icon icon-purple">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--purple)"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-        </div>
-        Đăng Nhập Admin
-      </div>
-
-      <div id="adminAlert" class="alert"></div>
-
-      <div class="field">
-        <label>Tên Đăng Nhập</label>
-        <input type="text" id="adminUser" placeholder="username" autocomplete="off">
-      </div>
-      <div class="field">
-        <label>Mật Khẩu</label>
-        <input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
-      </div>
-      <button class="btn btn-primary" style="width:100%" onclick="adminLogin()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-        Đăng Nhập
-      </button>
-    </div>
-
-    <!-- Admin dashboard (hidden until login) -->
-    <div id="adminDashboard" style="display:none">
-      <div class="card">
-        <div class="card-title" style="justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div class="card-title-icon icon-purple">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--purple)"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-            </div>
-            Danh Sách Keys
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <span id="adminName" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--purple)"></span>
-            <button class="btn btn-ghost btn-sm" onclick="adminLogout()">Đăng Xuất</button>
-          </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="key-meta" id="statsRow">
-          <div class="meta-item">
-            <div class="meta-label">Tổng Keys</div>
-            <div class="meta-value" id="statTotal">0</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Đang Hoạt Động</div>
-            <div class="meta-value good" id="statActive">0</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Hết Hạn</div>
-            <div class="meta-value bad" id="statExpired">0</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Thu Hồi</div>
-            <div class="meta-value warn" id="statRevoked">0</div>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- Keys table -->
-        <div style="overflow-x:auto">
-          <table class="keys-table">
-            <thead>
-              <tr>
-                <th>Key</th>
-                <th>IP</th>
-                <th>Tạo Ngày</th>
-                <th>Hết Hạn</th>
-                <th>Trạng Thái</th>
-                <th>Thao Tác</th>
-              </tr>
-            </thead>
-            <tbody id="keysTableBody">
-              <tr><td colspan="6"><div class="empty-state">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--text-muted)"><path d="M12.65 10A5.99 5.99 0 007 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 005.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-                <div>Chưa có key nào</div>
-              </div></td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="actions-row" style="margin-top:20px">
-          <button class="btn btn-danger btn-sm" onclick="clearAllKeys()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-            Xóa Tất Cả Keys
-          </button>
-        </div>
-      </div>
-    </div>
+    <div class="bottom-link"><a href="/">← Về trang chủ</a></div>
   </div>
 
 </div>
 
 <script>
-// === State ===
-const ADMIN_USER = 'quoctuan';
-const ADMIN_PASS = '21112009';
-const KEY_VALIDITY_DAYS = 30;
-let currentIP = '';
-let currentKey = '';
-let isAdminLoggedIn = false;
+let verifiedKey = '';
+let barInterval = null;
 
-// === View Switch ===
-function switchView(view) {
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  const idx = view === 'user' ? 0 : 1;
-  document.querySelectorAll('.view-btn')[idx].classList.add('active');
-  document.getElementById(`view-${view}`).classList.add('active');
-}
-
-// === Key Storage ===
-function getKeys() {
-  try { return JSON.parse(localStorage.getItem('onluyen_keys') || '{}'); } catch { return {}; }
-}
-function saveKeys(keys) { localStorage.setItem('onluyen_keys', JSON.stringify(keys)); }
-
-// === Generate Key from IP ===
-function generateKeyFromIP(ip) {
-  const salt = 'ONLUYEN_SECRET_2024';
-  const str = ip + salt;
-  let h1 = 0x9dc5811c, h2 = 0x85ebca6b;
-  for (let i = 0; i < str.length; i++) {
-    const c = str.charCodeAt(i);
-    h1 = Math.imul(h1 ^ c, 0xcc9e2d51); h1 = (h1 << 15) | (h1 >>> 17); h1 = Math.imul(h1, 0x1b873593);
-    h2 = Math.imul(h2 ^ c, 0x85ebca6b); h2 = (h2 << 13) | (h2 >>> 19); h2 = Math.imul(h2, 0xc2b2ae35);
-  }
-  h1 ^= h2; h2 ^= h1;
-  const hex = ((h1 >>> 0).toString(16).padStart(8,'0') + (h2 >>> 0).toString(16).padStart(8,'0')).toUpperCase();
-  return `${hex.slice(0,4)}-${hex.slice(4,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}`;
-}
-
-// === IP Detection ===
-async function detectIP() {
+// ─── INIT: Kiểm tra key theo IP ───────────────────────────────────────────────
+async function init() {
   try {
-    const res = await fetch('https://api.ipify.org?format=json');
-    const data = await res.json();
-    currentIP = data.ip;
+    const d = await (await fetch('/verify-key-by-ip')).json();
+
+    if (d.success) {
+      // Key hợp lệ → vào thẳng tool
+      verifiedKey = d.key;
+      enterTool(d);
+    } else {
+      // Chưa có key hoặc hết hạn → hiện form nhập key
+      showGateForm(d.message, d.key || '');
+    }
+  } catch (e) {
+    showGateForm('Lỗi kết nối server: ' + e.message, '');
+  }
+}
+
+function showGateForm(msg, autoKey) {
+  const info = document.getElementById('gateInfo');
+  info.innerHTML = `<span style="color:var(--red)">⚠</span> ${msg}`;
+
+  document.getElementById('gateInputArea').style.display = 'block';
+  if (autoKey) document.getElementById('keyInput').value = fmtKey(autoKey);
+}
+
+// ─── SUBMIT KEY THỦ CÔNG ─────────────────────────────────────────────────────
+async function submitKey() {
+  const raw = document.getElementById('keyInput').value.trim().replace(/-/g,'').toUpperCase();
+  const err = document.getElementById('gateErr');
+  err.style.display = 'none';
+
+  if (raw.length < 20) {
+    err.textContent = 'Key phải có ít nhất 20 ký tự';
+    err.style.display = 'block'; return;
+  }
+
+  try {
+    const d = await (await fetch('/verify-key', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: raw })
+    })).json();
+
+    if (d.success) {
+      verifiedKey = raw;
+      // Lưu vào sessionStorage để không phải nhập lại khi reload
+      sessionStorage.setItem('vk', raw);
+      enterTool({ key: raw, ip: d.ip, seconds_remaining: d.seconds_remaining });
+    } else {
+      err.textContent = '✗ ' + d.message;
+      err.style.display = 'block';
+    }
+  } catch (e) {
+    err.textContent = 'Lỗi kết nối: ' + e.message;
+    err.style.display = 'block';
+  }
+}
+
+// ─── VÀO TOOL ────────────────────────────────────────────────────────────────
+function enterTool(d) {
+  document.getElementById('keyGate').style.display = 'none';
+  document.getElementById('mainTool').style.display = 'block';
+
+  // Key bar
+  document.getElementById('barIP').textContent = d.ip ? `| ${d.ip}` : '';
+  startBarCountdown(d.seconds_remaining || 0);
+
+  loadAccounts();
+}
+
+function startBarCountdown(s) {
+  if (barInterval) clearInterval(barInterval);
+  const el = document.getElementById('barCountdown');
+  const bar = document.getElementById('keyBar');
+  const dot = document.getElementById('barDot');
+
+  const tick = () => {
+    if (s <= 0) {
+      clearInterval(barInterval);
+      el.textContent = 'ĐÃ HẾT HẠN';
+      dot.className  = 'status-dot dot-invalid';
+      bar.classList.add('invalid');
+      document.getElementById('runBtn').disabled = true;
+      showToolAlert('Key đã hết hạn trong phiên này. Vui lòng liên hệ admin.', 'error');
+      return;
+    }
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    el.textContent = `${pad(h)}:${pad(m)}:${pad(sec)}`;
+    s--;
+  };
+  tick(); barInterval = setInterval(tick, 1000);
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+function fmtKey(k) { return k.match(/.{1,5}/g).join('-'); }
+
+// ─── LOAD ACCOUNTS ───────────────────────────────────────────────────────────
+async function loadAccounts() {
+  try {
+    const d = await (await fetch('/get-accounts')).json();
+    const sel = document.getElementById('taikhoan');
+    if (d.success && d.accounts.length) {
+      sel.innerHTML = '<option value="">-- Chọn tài khoản --</option>';
+      d.accounts.forEach(a => {
+        const o = document.createElement('option');
+        o.value = a.email;
+        o.textContent = `${a.name} (${a.email})`;
+        sel.appendChild(o);
+      });
+
+      // Khôi phục tài khoản đã chọn trước đó
+      const saved = sessionStorage.getItem('selectedAccount');
+      if (saved) sel.value = saved;
+
+      document.getElementById('runBtn').disabled = false;
+    } else {
+      sel.innerHTML = '<option value="">Không có tài khoản</option>';
+    }
   } catch {
-    currentIP = '127.0.0.1';
-  }
-  document.getElementById('ipValue').textContent = currentIP;
-  document.getElementById('ipLoading').style.display = 'none';
-  document.getElementById('genBtn').disabled = false;
-
-  // Check if key exists
-  const keys = getKeys();
-  const key = generateKeyFromIP(currentIP);
-  if (keys[key]) {
-    showExistingKey(key, keys[key]);
+    document.getElementById('taikhoan').innerHTML = '<option value="">Lỗi tải danh sách</option>';
   }
 }
 
-function showExistingKey(key, info) {
-  currentKey = key;
-  const keyEl = document.getElementById('keyValue');
-  keyEl.textContent = key;
-  keyEl.className = 'key-value';
+// ─── RUN BATCH ────────────────────────────────────────────────────────────────
+async function runBatch() {
+  const logid   = document.getElementById('logid').value.trim();
+  const taikhoan = document.getElementById('taikhoan').value;
 
-  const now = new Date();
-  const expires = new Date(info.expires);
-  const diffDays = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
-  const isActive = info.active && expires > now;
+  if (!logid)    { showToolAlert('Vui lòng nhập ID bài', 'error'); return; }
+  if (!taikhoan) { showToolAlert('Vui lòng chọn tài khoản', 'error'); return; }
 
-  document.getElementById('keyMeta').style.display = 'flex';
-  document.getElementById('metaStatus').textContent = isActive ? 'Hoạt động' : 'Hết hạn';
-  document.getElementById('metaStatus').className = `meta-value ${isActive ? 'good' : 'bad'}`;
-  document.getElementById('metaCreated').textContent = new Date(info.created).toLocaleDateString('vi-VN');
-  document.getElementById('metaExpiry').textContent = expires.toLocaleDateString('vi-VN');
-  document.getElementById('metaDays').textContent = isActive ? `${diffDays} ngày` : 'Đã hết hạn';
-  document.getElementById('metaDays').className = `meta-value ${diffDays > 7 ? 'good' : diffDays > 0 ? 'warn' : 'bad'}`;
+  // Lưu tài khoản đang dùng
+  sessionStorage.setItem('selectedAccount', taikhoan);
 
-  const copyBtn = document.getElementById('copyBtn');
-  copyBtn.disabled = false;
-}
+  const btn     = document.getElementById('runBtn');
+  const outBox  = document.getElementById('outputBox');
+  const outLog  = document.getElementById('outputLog');
+  const outStat = document.getElementById('outputStatus');
+  const outTs   = document.getElementById('outputTs');
 
-function generateKey() {
-  if (!currentIP) return;
-  const key = generateKeyFromIP(currentIP);
-  const keys = getKeys();
-  const now = new Date();
-  const expires = new Date(now);
-  expires.setDate(expires.getDate() + KEY_VALIDITY_DAYS);
+  btn.disabled    = true;
+  btn.innerHTML   = '<span class="spinner"></span>ĐANG CHẠY...';
+  outBox.style.display = 'none';
+  clearToolAlert();
 
-  if (!keys[key]) {
-    keys[key] = {
-      ip: currentIP,
-      created: now.toISOString(),
-      expires: expires.toISOString(),
-      active: true
-    };
-    saveKeys(keys);
-  }
+  try {
+    const res = await fetch('/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logid, taikhoan })
+    });
+    const d = await res.json();
 
-  showExistingKey(key, keys[key]);
-  showUserAlert('success', `Key đã được tạo! Có hiệu lực đến ${expires.toLocaleDateString('vi-VN')}`);
-}
+    outBox.style.display = 'block';
+    outStat.textContent  = d.status || (d.success ? '✓ Thành công' : '✗ Lỗi');
+    outStat.className    = 'output-status ' + (d.success ? 'ok' : 'err');
+    outTs.textContent    = d.timestamp || '';
 
-function copyKey() {
-  if (!currentKey) return;
-  navigator.clipboard.writeText(currentKey).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = 'COPIED!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
-  });
-}
+    // Hiển thị log chi tiết nếu có, fallback về message
+    const logText = (d.log_file || d.message || '').trim();
+    outLog.textContent = logText || '(Không có output)';
 
-// === Alerts ===
-function showUserAlert(type, msg) {
-  const el = document.getElementById('userAlert');
-  const icons = { success:'✓', error:'✗', info:'ℹ' };
-  el.className = `alert show ${type}`;
-  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
-  setTimeout(() => { el.className = 'alert'; }, 4000);
-}
-
-function showAdminAlert(type, msg) {
-  const el = document.getElementById('adminAlert');
-  const icons = { success:'✓', error:'✗', info:'ℹ' };
-  el.className = `alert show ${type}`;
-  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
-}
-
-// === Admin ===
-function adminLogin() {
-  const user = document.getElementById('adminUser').value.trim();
-  const pass = document.getElementById('adminPass').value;
-  if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    isAdminLoggedIn = true;
-    document.getElementById('adminLoginCard').style.display = 'none';
-    document.getElementById('adminDashboard').style.display = 'block';
-    document.getElementById('adminName').textContent = `@${user}`;
-    renderKeysTable();
-  } else {
-    showAdminAlert('error', 'Sai tên đăng nhập hoặc mật khẩu');
+    if (d.success) {
+      showToolAlert('Hoàn thành! Kiểm tra log bên dưới.', 'success');
+    } else {
+      showToolAlert(d.message || 'Đã có lỗi xảy ra.', 'error');
+    }
+  } catch (e) {
+    outBox.style.display = 'block';
+    outStat.textContent  = '✗ Lỗi kết nối';
+    outStat.className    = 'output-status err';
+    outLog.textContent   = e.message;
+    showToolAlert('Lỗi kết nối: ' + e.message, 'error');
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = '▶ CHẠY TỰ ĐỘNG';
   }
 }
 
-function adminLogout() {
-  isAdminLoggedIn = false;
-  document.getElementById('adminLoginCard').style.display = 'block';
-  document.getElementById('adminDashboard').style.display = 'none';
-  document.getElementById('adminUser').value = '';
-  document.getElementById('adminPass').value = '';
+function showToolAlert(msg, type) {
+  const el = document.getElementById('toolAlert');
+  el.className = 'alert alert-' + type + ' show';
+  el.textContent = msg;
+}
+function clearToolAlert() {
+  const el = document.getElementById('toolAlert');
+  el.className = 'alert'; el.textContent = '';
 }
 
-function renderKeysTable() {
-  const keys = getKeys();
-  const tbody = document.getElementById('keysTableBody');
-  const entries = Object.entries(keys);
-  const now = new Date();
-
-  let total = entries.length, active = 0, expired = 0, revoked = 0;
-
-  if (entries.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--text-muted)"><path d="M12.65 10A5.99 5.99 0 007 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 005.65-4H17v4h4v-4h2v-4H12.65z"/></svg>
-      <div>Chưa có key nào trong hệ thống</div>
-    </div></td></tr>`;
-  } else {
-    tbody.innerHTML = entries.map(([key, info]) => {
-      const expires = new Date(info.expires);
-      const isExpired = expires < now;
-      const isRevoked = !info.active;
-      if (isRevoked) revoked++;
-      else if (isExpired) expired++;
-      else active++;
-
-      const statusBadge = isRevoked
-        ? `<span class="status-badge status-revoked">● Thu Hồi</span>`
-        : isExpired
-          ? `<span class="status-badge status-expired">● Hết Hạn</span>`
-          : `<span class="status-badge status-active">● Hoạt Động</span>`;
-
-      return `<tr>
-        <td class="key-cell">${key}</td>
-        <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim)">${info.ip}</td>
-        <td style="font-size:12px;color:var(--text-dim)">${new Date(info.created).toLocaleDateString('vi-VN')}</td>
-        <td style="font-size:12px;color:${isExpired && !isRevoked ? 'var(--red)' : 'var(--text-dim)'}">${expires.toLocaleDateString('vi-VN')}</td>
-        <td>${statusBadge}</td>
-        <td>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-cyan btn-sm" onclick="extendKey('${key}')">+30d</button>
-            ${!isRevoked ? `<button class="btn btn-danger btn-sm" onclick="revokeKey('${key}')">Thu Hồi</button>` : `<button class="btn btn-ghost btn-sm" onclick="activateKey('${key}')">Kích Hoạt</button>`}
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
-  }
-
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statActive').textContent = active;
-  document.getElementById('statExpired').textContent = expired;
-  document.getElementById('statRevoked').textContent = revoked;
-}
-
-function extendKey(key) {
-  const keys = getKeys();
-  if (!keys[key]) return;
-  const expires = new Date(keys[key].expires);
-  const now = new Date();
-  const base = expires > now ? expires : now;
-  base.setDate(base.getDate() + KEY_VALIDITY_DAYS);
-  keys[key].expires = base.toISOString();
-  keys[key].active = true;
-  saveKeys(keys);
-  renderKeysTable();
-}
-
-function revokeKey(key) {
-  const keys = getKeys();
-  if (!keys[key]) return;
-  keys[key].active = false;
-  saveKeys(keys);
-  renderKeysTable();
-}
-
-function activateKey(key) {
-  const keys = getKeys();
-  if (!keys[key]) return;
-  keys[key].active = true;
-  const expires = new Date(keys[key].expires);
-  if (expires < new Date()) {
-    const newExpiry = new Date();
-    newExpiry.setDate(newExpiry.getDate() + KEY_VALIDITY_DAYS);
-    keys[key].expires = newExpiry.toISOString();
-  }
-  saveKeys(keys);
-  renderKeysTable();
-}
-
-function clearAllKeys() {
-  if (!confirm('Xóa tất cả keys? Không thể hoàn tác!')) return;
-  localStorage.removeItem('onluyen_keys');
-  renderKeysTable();
-}
-
-// === Verify key (exported for homework.html) ===
-function verifyKey(key) {
-  const keys = getKeys();
-  const info = keys[key];
-  if (!info) return { valid: false, reason: 'Key không tồn tại' };
-  if (!info.active) return { valid: false, reason: 'Key đã bị thu hồi' };
-  if (new Date(info.expires) < new Date()) return { valid: false, reason: 'Key đã hết hạn' };
-  return { valid: true };
-}
-
-// Expose for other pages
-window.verifyKeyGlobal = verifyKey;
-
-// Init
-detectIP();
+// ─── START ────────────────────────────────────────────────────────────────────
+init();
 </script>
 </body>
 </html>
