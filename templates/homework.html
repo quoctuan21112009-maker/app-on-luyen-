@@ -1,424 +1,353 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DNS BATCH — Làm Bài</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#050508;--surface:rgba(255,255,255,0.03);
-  --border:rgba(0,230,255,0.15);--cyan:#00e5ff;--green:#00ff88;
-  --red:#ff4560;--yellow:#ffd600;--orange:#ff9500;
-  --text:#c8d8e8;--muted:#4a6070;
-}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);
-     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);
-  background-size:40px 40px;}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập ID Bài - ONLUYEN Batch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.wrapper{position:relative;z-index:1;width:100%;max-width:560px;}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-/* ── KEY GATE ── */
-#keyGate{
-  background:var(--surface);border:1px solid rgba(255,69,96,0.3);border-radius:16px;
-  padding:36px 32px;backdrop-filter:blur(20px);
-  box-shadow:0 0 60px rgba(255,69,96,0.05),inset 0 1px 0 rgba(255,255,255,0.05);
-  animation:fadeIn .5s ease;
-}
-.gate-icon{text-align:center;font-size:40px;margin-bottom:16px;}
-.gate-title{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;
-  color:var(--red);text-align:center;letter-spacing:2px;margin-bottom:6px;}
-.gate-sub{font-size:11px;color:var(--muted);text-align:center;letter-spacing:1px;margin-bottom:24px;}
-.gate-info{background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);
-  border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:var(--muted);line-height:1.8;}
-.gate-info span{color:var(--cyan);}
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
 
-label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
-input,select{width:100%;padding:12px 14px;background:rgba(0,0,0,0.4);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;
-  outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;}
-input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.1);}
-input::placeholder{color:var(--muted);}
-select option{background:#0d1117;}
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
 
-.btn{width:100%;padding:13px;border:none;border-radius:8px;
-  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
-  letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
-.btn-cyan{background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(0,229,255,0.04));
-  border:1px solid var(--cyan);color:var(--cyan);}
-.btn-cyan:hover:not(:disabled){background:rgba(0,229,255,0.2);box-shadow:0 0 20px rgba(0,229,255,0.25);transform:translateY(-1px);}
-.btn-green{background:linear-gradient(135deg,rgba(0,255,136,0.12),rgba(0,255,136,0.04));
-  border:1px solid var(--green);color:var(--green);}
-.btn-green:hover:not(:disabled){background:rgba(0,255,136,0.2);box-shadow:0 0 20px rgba(0,255,136,0.25);transform:translateY(-1px);}
-.btn:disabled{opacity:.4;cursor:not-allowed;}
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
 
-.gate-err{color:var(--red);font-size:11px;margin-top:10px;display:none;text-align:center;}
-.back-link{display:block;text-align:center;margin-top:16px;font-size:11px;color:var(--muted);text-decoration:none;}
-.back-link:hover{color:var(--cyan);}
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-/* ── MAIN TOOL ── */
-#mainTool{display:none;animation:fadeIn .5s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
 
-.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
-  padding:36px 32px;backdrop-filter:blur(20px);margin-bottom:16px;
-  box-shadow:0 0 60px rgba(0,229,255,0.05),inset 0 1px 0 rgba(255,255,255,0.05);}
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
 
-.logo{text-align:center;margin-bottom:24px;}
-.logo-title{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;letter-spacing:4px;
-  color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.4);}
-.logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:4px;}
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
-/* Key status bar */
-.key-bar{display:flex;align-items:center;justify-content:space-between;
-  background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);
-  border-radius:8px;padding:10px 14px;margin-bottom:20px;flex-wrap:wrap;gap:8px;}
-.key-bar.invalid{background:rgba(255,69,96,0.05);border-color:rgba(255,69,96,0.2);}
-.key-bar-left{display:flex;align-items:center;gap:8px;font-size:11px;}
-.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.dot-valid{background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
-.dot-invalid{background:var(--red);box-shadow:0 0 8px var(--red);}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-.key-bar-right{font-size:10px;color:var(--yellow);font-weight:600;}
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
 
-.section-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
-  margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
 
-.form-group{margin-bottom:18px;}
-.input-note{font-size:10px;color:var(--muted);margin-top:6px;}
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
-/* Run button */
-.run-btn{width:100%;padding:16px;border:none;border-radius:10px;
-  background:linear-gradient(135deg,rgba(0,255,136,0.15),rgba(0,229,255,0.08));
-  border:1px solid var(--green);color:var(--green);
-  font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;letter-spacing:3px;
-  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
-.run-btn::before{content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(0,255,136,0),rgba(0,255,136,0.08));
-  transform:translateX(-100%);transition:transform .4s;}
-.run-btn:hover::before{transform:translateX(0);}
-.run-btn:hover:not(:disabled){box-shadow:0 0 30px rgba(0,255,136,0.3);transform:translateY(-2px);}
-.run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+        .alert {
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            display: none;
+        }
 
-/* Output */
-.output-box{background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:10px;
-  padding:20px;margin-top:20px;display:none;animation:fadeIn .3s;}
-.output-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.output-status{font-size:12px;font-weight:700;letter-spacing:1px;}
-.output-status.ok{color:var(--green);}
-.output-status.err{color:var(--red);}
-.output-ts{font-size:10px;color:var(--muted);}
-.output-log{font-size:11px;line-height:1.7;color:var(--text);white-space:pre-wrap;
-  word-break:break-word;max-height:300px;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.output-log::-webkit-scrollbar{width:4px;}
-.output-log::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
 
-/* Spinner */
-.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border);
-  border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px;}
-@keyframes spin{to{transform:rotate(360deg)}}
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
 
-.alert{padding:11px 14px;border-radius:8px;font-size:12px;margin-bottom:16px;
-  display:none;border-left:3px solid;animation:fadeIn .3s;}
-.alert.show{display:block;}
-.alert-error{background:rgba(255,69,96,0.08);border-color:var(--red);color:var(--red);}
-.alert-success{background:rgba(0,255,136,0.08);border-color:var(--green);color:var(--green);}
-.alert-info{background:rgba(0,229,255,0.08);border-color:var(--cyan);color:var(--cyan);}
+        .alert.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
 
-.bottom-link{text-align:center;font-size:11px;color:var(--muted);margin-top:4px;}
-.bottom-link a{color:var(--cyan);text-decoration:none;}
-.bottom-link a:hover{text-shadow:0 0 10px rgba(0,229,255,0.5);}
+        .log-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            display: none;
+        }
 
-@media(max-width:400px){.card{padding:24px 16px;}}
-</style>
+        .log-container.show {
+            display: block;
+        }
+
+        .log-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .log-output {
+            background: #1e1e1e;
+            color: #0db;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-badge.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+    </style>
 </head>
+
 <body>
-<div class="wrapper">
+    <div class="container">
+        <h1>🎯 Nhập ID Bài</h1>
+        <p class="subtitle">Chọn tài khoản và nhập mã bài để giải</p>
 
-  <!-- ══════════ KEY GATE ══════════ -->
-  <div id="keyGate">
-    <div class="gate-icon">🔒</div>
-    <div class="gate-title">XÁC THỰC KEY</div>
-    <div class="gate-sub">Bạn cần key hợp lệ để sử dụng công cụ này</div>
+        <div id="alert" class="alert"></div>
 
-    <div class="gate-info" id="gateInfo">
-      <span class="spinner"></span> Đang kiểm tra key của bạn...
-    </div>
+        <form id="homeworkForm">
+            <div class="form-group">
+                <label for="taikhoan">Chọn Tài Khoản <span style="color: red;">*</span></label>
+                <select id="taikhoan" name="taikhoan" required
+                    style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 16px;">
+                    <option value="">-- Chọn tài khoản --</option>
+                </select>
+            </div>
 
-    <div id="gateInputArea" style="display:none">
-      <div class="form-group" style="margin-bottom:16px">
-        <label>Nhập Key của bạn</label>
-        <input type="text" id="keyInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
-          maxlength="24" autocomplete="off" autocapitalize="characters"
-          onkeydown="if(event.key==='Enter')submitKey()"
-          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9\-]/g,'')">
-      </div>
-      <button class="btn btn-cyan" onclick="submitKey()">XÁC THỰC &amp; VÀO TRANG</button>
-      <div class="gate-err" id="gateErr"></div>
-    </div>
+            <div class="form-group">
+                <label for="logid">ID Bài (Log ID) <span style="color: red;">*</span></label>
+                <input type="text" id="logid" name="logid" required
+                    placeholder="Ví dụ: 69a57498... (có thể nhập một phần)">
+            </div>
 
-    <a href="/" class="back-link">← Quay lại trang chủ để lấy key</a>
-  </div>
+            <button type="submit" id="submitBtn">Chạy ✓</button>
+        </form>
 
-  <!-- ══════════ MAIN TOOL ══════════ -->
-  <div id="mainTool">
-    <div class="card">
-      <div class="logo">
-        <div class="logo-title">DNS BATCH</div>
-        <div class="logo-sub">ONLUYEN AUTOMATION TOOL</div>
-      </div>
-
-      <!-- Key status bar -->
-      <div class="key-bar" id="keyBar">
-        <div class="key-bar-left">
-          <div class="status-dot dot-valid" id="barDot"></div>
-          <span style="color:var(--green);font-size:11px;">KEY HỢP LỆ</span>
-          <span style="color:var(--muted);font-size:10px;" id="barIP"></span>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <span>Chương trình đang chạy... vui lòng chờ</span>
         </div>
-        <div class="key-bar-right" id="barCountdown"></div>
-      </div>
 
-      <div id="toolAlert" class="alert"></div>
-
-      <div class="section-label">Thông tin bài làm</div>
-
-      <div class="form-group">
-        <label>ID Bài Tập / Bài Kiểm Tra</label>
-        <input type="text" id="logid" placeholder="Nhập ID bài (vd: 123456789)"
-          autocomplete="off"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-        <div class="input-note">⚠ Chỉ nhập số — lấy từ URL trang bài trên OnLuyện</div>
-      </div>
-
-      <div class="form-group">
-        <label>Tài Khoản Sử Dụng</label>
-        <select id="taikhoan">
-          <option value="">-- Đang tải tài khoản... --</option>
-        </select>
-      </div>
-
-      <button class="run-btn" id="runBtn" onclick="runBatch()" disabled>
-        ▶ CHẠY TỰ ĐỘNG
-      </button>
+        <!-- Log Container -->
+        <div class="log-container" id="logContainer">
+            <div class="log-header">📋 Log Output:</div>
+            <div class="log-output" id="logOutput"></div>
+            <div id="statusBadge"></div>
+            <button class="back-btn" onclick="window.location.href='/'">← Quay Lại Trang Đăng Ký</button>
+        </div>
     </div>
 
-    <!-- Output -->
-    <div class="output-box" id="outputBox">
-      <div class="output-header">
-        <span class="output-status" id="outputStatus"></span>
-        <span class="output-ts" id="outputTs"></span>
-      </div>
-      <div class="output-log" id="outputLog"></div>
-    </div>
+    <script>
+        const form = document.getElementById('homeworkForm');
+        const alertDiv = document.getElementById('alert');
+        const loading = document.getElementById('loading');
+        const logContainer = document.getElementById('logContainer');
+        const logOutput = document.getElementById('logOutput');
+        const statusBadge = document.getElementById('statusBadge');
+        const submitBtn = document.getElementById('submitBtn');
+        const taikhoanSelect = document.getElementById('taikhoan');
 
-    <div class="bottom-link"><a href="/">← Về trang chủ</a></div>
-  </div>
+        // Load danh sách tài khoản khi trang load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/get-accounts');
+                const data = await response.json();
 
-</div>
+                if (data.success) {
+                    data.accounts.forEach(account => {
+                        const option = document.createElement('option');
+                        option.value = account.email;
+                        option.textContent = `${account.name} (${account.email})`;
+                        taikhoanSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi tải danh sách tài khoản:', error);
+            }
+        });
 
-<script>
-let verifiedKey = '';
-let barInterval = null;
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-// ─── INIT: Kiểm tra key theo IP ───────────────────────────────────────────────
-async function init() {
-  try {
-    const d = await (await fetch('/verify-key-by-ip')).json();
+            const logid = document.getElementById('logid').value.trim();
+            const taikhoan = taikhoanSelect.value.trim();
 
-    if (d.success) {
-      // Key hợp lệ → vào thẳng tool
-      verifiedKey = d.key;
-      enterTool(d);
-    } else {
-      // Chưa có key hoặc hết hạn → hiện form nhập key
-      showGateForm(d.message, d.key || '');
-    }
-  } catch (e) {
-    showGateForm('Lỗi kết nối server: ' + e.message, '');
-  }
-}
+            if (!logid) {
+                alertDiv.className = 'alert error';
+                alertDiv.innerHTML = '✗ Vui lòng nhập ID bài';
+                return;
+            }
 
-function showGateForm(msg, autoKey) {
-  const info = document.getElementById('gateInfo');
-  info.innerHTML = `<span style="color:var(--red)">⚠</span> ${msg}`;
+            if (!taikhoan) {
+                alertDiv.className = 'alert error';
+                alertDiv.innerHTML = '✗ Vui lòng chọn tài khoản';
+                return;
+            }
 
-  document.getElementById('gateInputArea').style.display = 'block';
-  if (autoKey) document.getElementById('keyInput').value = fmtKey(autoKey);
-}
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            alertDiv.className = 'alert';
+            alertDiv.innerHTML = '';
+            logContainer.classList.remove('show');
+            logOutput.innerHTML = '';
 
-// ─── SUBMIT KEY THỦ CÔNG ─────────────────────────────────────────────────────
-async function submitKey() {
-  const raw = document.getElementById('keyInput').value.trim().replace(/-/g,'').toUpperCase();
-  const err = document.getElementById('gateErr');
-  err.style.display = 'none';
+            try {
+                const response = await fetch('/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ logid, taikhoan })
+                });
 
-  if (raw.length < 20) {
-    err.textContent = 'Key phải có ít nhất 20 ký tự';
-    err.style.display = 'block'; return;
-  }
+                const data = await response.json();
 
-  try {
-    const d = await (await fetch('/verify-key', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: raw })
-    })).json();
+                if (data.success) {
+                    logContainer.classList.add('show');
+                    logOutput.innerHTML = data.log_file || data.message;
+                    statusBadge.className = 'status-badge success';
+                    statusBadge.innerHTML = `✓ ${data.status}`;
 
-    if (d.success) {
-      verifiedKey = raw;
-      // Lưu vào sessionStorage để không phải nhập lại khi reload
-      sessionStorage.setItem('vk', raw);
-      enterTool({ key: raw, ip: d.ip, seconds_remaining: d.seconds_remaining });
-    } else {
-      err.textContent = '✗ ' + d.message;
-      err.style.display = 'block';
-    }
-  } catch (e) {
-    err.textContent = 'Lỗi kết nối: ' + e.message;
-    err.style.display = 'block';
-  }
-}
+                    alertDiv.className = 'alert success';
+                    alertDiv.innerHTML = `✓ Chương trình thực thi thành công! (${data.timestamp})`;
+                } else {
+                    logContainer.classList.add('show');
+                    logOutput.innerHTML = data.message || 'Lỗi không xác định';
+                    statusBadge.className = 'status-badge error';
+                    statusBadge.innerHTML = `✗ ${data.status || 'Lỗi'}`;
 
-// ─── VÀO TOOL ────────────────────────────────────────────────────────────────
-function enterTool(d) {
-  document.getElementById('keyGate').style.display = 'none';
-  document.getElementById('mainTool').style.display = 'block';
-
-  // Key bar
-  document.getElementById('barIP').textContent = d.ip ? `| ${d.ip}` : '';
-  startBarCountdown(d.seconds_remaining || 0);
-
-  loadAccounts();
-}
-
-function startBarCountdown(s) {
-  if (barInterval) clearInterval(barInterval);
-  const el = document.getElementById('barCountdown');
-  const bar = document.getElementById('keyBar');
-  const dot = document.getElementById('barDot');
-
-  const tick = () => {
-    if (s <= 0) {
-      clearInterval(barInterval);
-      el.textContent = 'ĐÃ HẾT HẠN';
-      dot.className  = 'status-dot dot-invalid';
-      bar.classList.add('invalid');
-      document.getElementById('runBtn').disabled = true;
-      showToolAlert('Key đã hết hạn trong phiên này. Vui lòng liên hệ admin.', 'error');
-      return;
-    }
-    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-    el.textContent = `${pad(h)}:${pad(m)}:${pad(sec)}`;
-    s--;
-  };
-  tick(); barInterval = setInterval(tick, 1000);
-}
-
-function pad(n) { return String(n).padStart(2, '0'); }
-function fmtKey(k) { return k.match(/.{1,5}/g).join('-'); }
-
-// ─── LOAD ACCOUNTS ───────────────────────────────────────────────────────────
-async function loadAccounts() {
-  try {
-    const d = await (await fetch('/get-accounts')).json();
-    const sel = document.getElementById('taikhoan');
-    if (d.success && d.accounts.length) {
-      sel.innerHTML = '<option value="">-- Chọn tài khoản --</option>';
-      d.accounts.forEach(a => {
-        const o = document.createElement('option');
-        o.value = a.email;
-        o.textContent = `${a.name} (${a.email})`;
-        sel.appendChild(o);
-      });
-
-      // Khôi phục tài khoản đã chọn trước đó
-      const saved = sessionStorage.getItem('selectedAccount');
-      if (saved) sel.value = saved;
-
-      document.getElementById('runBtn').disabled = false;
-    } else {
-      sel.innerHTML = '<option value="">Không có tài khoản</option>';
-    }
-  } catch {
-    document.getElementById('taikhoan').innerHTML = '<option value="">Lỗi tải danh sách</option>';
-  }
-}
-
-// ─── RUN BATCH ────────────────────────────────────────────────────────────────
-async function runBatch() {
-  const logid   = document.getElementById('logid').value.trim();
-  const taikhoan = document.getElementById('taikhoan').value;
-
-  if (!logid)    { showToolAlert('Vui lòng nhập ID bài', 'error'); return; }
-  if (!taikhoan) { showToolAlert('Vui lòng chọn tài khoản', 'error'); return; }
-
-  // Lưu tài khoản đang dùng
-  sessionStorage.setItem('selectedAccount', taikhoan);
-
-  const btn     = document.getElementById('runBtn');
-  const outBox  = document.getElementById('outputBox');
-  const outLog  = document.getElementById('outputLog');
-  const outStat = document.getElementById('outputStatus');
-  const outTs   = document.getElementById('outputTs');
-
-  btn.disabled    = true;
-  btn.innerHTML   = '<span class="spinner"></span>ĐANG CHẠY...';
-  outBox.style.display = 'none';
-  clearToolAlert();
-
-  try {
-    const res = await fetch('/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logid, taikhoan })
-    });
-    const d = await res.json();
-
-    outBox.style.display = 'block';
-    outStat.textContent  = d.status || (d.success ? '✓ Thành công' : '✗ Lỗi');
-    outStat.className    = 'output-status ' + (d.success ? 'ok' : 'err');
-    outTs.textContent    = d.timestamp || '';
-
-    // Hiển thị log chi tiết nếu có, fallback về message
-    const logText = (d.log_file || d.message || '').trim();
-    outLog.textContent = logText || '(Không có output)';
-
-    if (d.success) {
-      showToolAlert('Hoàn thành! Kiểm tra log bên dưới.', 'success');
-    } else {
-      showToolAlert(d.message || 'Đã có lỗi xảy ra.', 'error');
-    }
-  } catch (e) {
-    outBox.style.display = 'block';
-    outStat.textContent  = '✗ Lỗi kết nối';
-    outStat.className    = 'output-status err';
-    outLog.textContent   = e.message;
-    showToolAlert('Lỗi kết nối: ' + e.message, 'error');
-  } finally {
-    btn.disabled  = false;
-    btn.innerHTML = '▶ CHẠY TỰ ĐỘNG';
-  }
-}
-
-function showToolAlert(msg, type) {
-  const el = document.getElementById('toolAlert');
-  el.className = 'alert alert-' + type + ' show';
-  el.textContent = msg;
-}
-function clearToolAlert() {
-  const el = document.getElementById('toolAlert');
-  el.className = 'alert'; el.textContent = '';
-}
-
-// ─── START ────────────────────────────────────────────────────────────────────
-init();
-</script>
+                    alertDiv.className = 'alert error';
+                    alertDiv.innerHTML = `✗ ${data.message}`;
+                }
+            } catch (error) {
+                alertDiv.className = 'alert error';
+                alertDiv.innerHTML = `✗ Lỗi: ${error.message}`;
+                logContainer.classList.add('show');
+                logOutput.innerHTML = `Lỗi khi kết nối: ${error.message}`;
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
+
 </html>
