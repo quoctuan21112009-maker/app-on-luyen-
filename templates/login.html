@@ -142,9 +142,7 @@ select option{background:#0d1117;}
 .badge-expired{color:var(--red);}
 .badge-off{color:var(--muted);}
 
-/* Tab specific inputs */
 .row2{display:grid;grid-template-columns:1fr 80px;gap:8px;}
-.row3{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;}
 
 .bottom-link{text-align:center;margin-top:24px;font-size:11px;color:var(--muted);}
 .bottom-link a{color:var(--cyan);text-decoration:none;}
@@ -256,21 +254,6 @@ select option{background:#0d1117;}
           </div>
           <div class="divider"></div>
 
-          <!-- TẠO KEY MỚI CHO IP -->
-          <div style="margin-bottom:14px">
-            <div class="small-label">Tạo key cho IP</div>
-            <div class="row2" style="margin-bottom:8px">
-              <input type="text" id="createIP" placeholder="IP (vd: 192.168.1.1)" style="font-size:11px;padding:9px 12px">
-              <input type="number" id="createDays" value="30" min="1" style="font-size:11px;padding:9px 8px;text-align:center">
-            </div>
-            <input type="text" id="createNote" placeholder="Ghi chú (tùy chọn)"
-              style="margin-bottom:8px;font-size:11px;padding:9px 12px">
-            <button class="btn-admin-green" onclick="adminCreateKey()">➕ TẠO KEY</button>
-            <div id="createResult" style="font-size:11px;margin-top:8px;display:none"></div>
-          </div>
-
-          <div class="divider"></div>
-
           <!-- ĐẶT NGÀY GIỜ CHÍNH XÁC -->
           <div style="margin-bottom:14px">
             <div class="small-label">Đặt hạn chính xác</div>
@@ -313,7 +296,7 @@ select option{background:#0d1117;}
           <div class="keys-wrap" id="keysWrap">
             <div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa tải</div>
           </div>
-        </div>
+        </div><!-- /adminDash -->
 
       </div><!-- /adminBody -->
     </div><!-- /admin-panel -->
@@ -407,7 +390,15 @@ async function loadKey() {
   document.getElementById('keyLoading').style.display = 'block';
   document.getElementById('keyContent').style.display = 'none';
   try {
-    const d = await (await fetch('/get-key')).json();
+    const res = await fetch('/get-key');
+    // Kiểm tra content-type để tránh parse HTML thành JSON khi server lỗi
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      throw new Error('Server trả về lỗi (không phải JSON). Kiểm tra lại server.');
+    }
+    const d = await res.json();
+    if (!d.success) throw new Error(d.message || 'Lỗi không xác định');
+
     currentKey = d.key;
     document.getElementById('ipText').textContent = d.ip;
     document.getElementById('keyValue').textContent = fmtKey(d.key);
@@ -431,11 +422,14 @@ async function loadKey() {
     }
   } catch (e) {
     document.getElementById('keyLoading').innerHTML =
-      '<span style="color:var(--red)">Lỗi tải key: ' + e.message + '</span>';
+      `<span style="color:var(--red)">⚠ Lỗi tải key: ${e.message}</span>`;
   }
 }
 
-function fmtKey(k) { return k.match(/.{1,5}/g).join('-'); }
+function fmtKey(k) {
+  if (!k) return '—';
+  return k.match(/.{1,5}/g).join('-');
+}
 
 function startCountdown(s) {
   if (cInterval) clearInterval(cInterval);
@@ -505,45 +499,28 @@ function adminLogout() {
   document.getElementById('adminPass').value = '';
 }
 
-function authHeader() { return { 'Content-Type': 'application/json', 'X-Admin-Auth': adminToken }; }
+function authHeader() {
+  return { 'Content-Type': 'application/json', 'X-Admin-Auth': adminToken };
+}
 
 function showResult(id, d) {
   const el = document.getElementById(id);
-  el.style.display   = 'block';
-  el.style.color     = d.success ? 'var(--green)' : 'var(--red)';
-  el.textContent     = d.success ? `✓ ${d.message}` : `✗ ${d.message}`;
+  el.style.display = 'block';
+  el.style.color   = d.success ? 'var(--green)' : 'var(--red)';
+  el.textContent   = d.success ? `✓ ${d.message}` : `✗ ${d.message}`;
   if (d.success && d.new_expiry) {
     el.textContent += ` — Hết hạn: ${new Date(d.new_expiry).toLocaleString('vi')}`;
   }
-  if (d.success && d.key) {
-    el.textContent += ` | Key: ${fmtKey(d.key)}`;
-  }
-}
-
-// Tạo key mới cho IP
-async function adminCreateKey() {
-  const ip   = document.getElementById('createIP').value.trim();
-  const days = parseInt(document.getElementById('createDays').value) || 30;
-  const note = document.getElementById('createNote').value.trim();
-  const res  = document.getElementById('createResult');
-  res.style.display = 'none';
-  try {
-    const d = await (await fetch('/admin/create-key', {
-      method: 'POST', headers: authHeader(),
-      body: JSON.stringify({ ip, days, note })
-    })).json();
-    showResult('createResult', d);
-    if (d.success) { loadAdminKeys(); document.getElementById('createIP').value = ''; }
-  } catch { document.getElementById('createResult').textContent = 'Lỗi kết nối'; res.style.display = 'block'; res.style.color = 'var(--red)'; }
 }
 
 // Đặt ngày giờ chính xác
 async function adminSetExpiry() {
   const key    = document.getElementById('setKey').value.trim().replace(/-/g,'').toUpperCase();
-  const expiry = document.getElementById('setExpiry').value; // "2025-12-31T23:59"
+  const expiry = document.getElementById('setExpiry').value;
   const note   = document.getElementById('setNote').value.trim();
   const res    = document.getElementById('setResult');
   res.style.display = 'none';
+  if (!key)    { res.style.display='block'; res.style.color='var(--red)'; res.textContent='Vui lòng nhập key'; return; }
   if (!expiry) { res.style.display='block'; res.style.color='var(--red)'; res.textContent='Vui lòng chọn ngày giờ'; return; }
   try {
     const d = await (await fetch('/admin/set-expiry', {
@@ -562,6 +539,7 @@ async function extendKey() {
   const note = document.getElementById('extNote').value.trim();
   const res  = document.getElementById('extResult');
   res.style.display = 'none';
+  if (!key) { res.style.display='block'; res.style.color='var(--red)'; res.textContent='Vui lòng nhập key'; return; }
   try {
     const d = await (await fetch('/admin/extend-key', {
       method: 'POST', headers: authHeader(),
@@ -578,9 +556,14 @@ async function loadAdminKeys() {
   wrap.innerHTML = '<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px"><span class="spinner"></span>Đang tải...</div>';
   try {
     const d = await (await fetch('/admin/keys', { headers: { 'X-Admin-Auth': adminToken } })).json();
-    if (!d.success) { wrap.innerHTML = `<div style="color:var(--red);font-size:11px;text-align:center;padding:10px">${d.message}</div>`; return; }
-    if (!d.keys.length) { wrap.innerHTML = '<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa có key nào</div>'; return; }
-
+    if (!d.success) {
+      wrap.innerHTML = `<div style="color:var(--red);font-size:11px;text-align:center;padding:10px">${d.message}</div>`;
+      return;
+    }
+    if (!d.keys.length) {
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px">Chưa có key nào</div>';
+      return;
+    }
     let html = '<table class="keys-table"><thead><tr><th>Key</th><th>IP</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr></thead><tbody>';
     d.keys.forEach(k => {
       const exp   = new Date(k.expiry).toLocaleString('vi');
@@ -615,7 +598,9 @@ async function loadAdminKeys() {
     });
     html += '</tbody></table>';
     wrap.innerHTML = html;
-  } catch (e) { wrap.innerHTML = `<div style="color:var(--red);font-size:11px;padding:10px">Lỗi: ${e.message}</div>`; }
+  } catch (e) {
+    wrap.innerHTML = `<div style="color:var(--red);font-size:11px;padding:10px">Lỗi: ${e.message}</div>`;
+  }
 }
 
 function quickFill(key) {
@@ -645,12 +630,8 @@ async function deleteKey(key) {
   } catch (e) { alert('Lỗi: ' + e.message); }
 }
 
-// Init
+// ── INIT ──────────────────────────────────────────────────────────────────────
 loadAccounts();
-if (adminToken) {
-  // Nếu đã đăng nhập từ session trước
-  document.addEventListener('DOMContentLoaded', () => {});
-}
 </script>
 </body>
 </html>
